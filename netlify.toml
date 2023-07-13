@@ -1,0 +1,4 @@
+[[redirects]]
+  from = "/api/*"
+  to = "/backend/:splat"
+  rewrite = "true"
