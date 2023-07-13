@@ -163,7 +163,7 @@
 
             //const formData = new FormData(this); // Get form data
             
-            fetch(apiUrl+`/login?username=${username}&password=${password}`, {
+            fetch(`/login?username=${username}&password=${password}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
