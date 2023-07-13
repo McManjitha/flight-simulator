@@ -48,9 +48,9 @@ mongoose.connect('mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongo
 });
 
 //app.use(express.static(__dirname + '/../public'));
-app.use(express.static(path.join(__dirname, '../public'), {
-  prefix : theUrl
-})); // Serve the "public" directory
+app.use(express.static(path.join(__dirname, '../public')));
+  //prefix : theUrl
+//})); // Serve the "public" directory
 //app.use('/backend', express.static(path.join(__dirname, '.')));  // Serve the current directory (backend)
 
 const collectionNames = ['5-6', '6-7']; // Define the collection names
