@@ -152,10 +152,6 @@
         //import { apiUrl } from '../backend/config.js';
 
         console.log(apiUrl);
-        //const apiURL = '';
-        //const apiUrl = require('./config.js');
-
-        //import { apiUrl } from "./config.js";
         function checkUsername(){
             event.preventDefault(); // Prevent the form from submitting normally
             let username = document.getElementById("username").value;
@@ -163,7 +159,7 @@
 
             //const formData = new FormData(this); // Get form data
             
-            fetch(`http://demo.eminenceapps.com/grp11`+`/login?username=${username}&password=${password}`, {
+            fetch(apiUrl+`/login?username=${username}&password=${password}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -174,7 +170,7 @@
                 // Process the response here
                 console.log("response received");
                 console.log('data = '+data);
-                window.location.href = `http://demo.eminenceapps.com/grp11/home.html?username=${username}`;
+                window.location.href = apiUrl+`/home.html?username=${username}`;
             })
             .catch(error => {
                 // Handle any errors here
