@@ -163,7 +163,7 @@
 
             //const formData = new FormData(this); // Get form data
             
-            fetch(`/login?username=${username}&password=${password}`, {
+            fetch(`http://demo.eminenceapps.com/grp11`+`/login?username=${username}&password=${password}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -172,8 +172,9 @@
             .then(response => response.json())
             .then(data => {
                 // Process the response here
+                console.log("response received");
                 console.log('data = '+data);
-               window.location.href = apiUrl+`/home.html?username=${username}`;
+                window.location.href = `http://demo.eminenceapps.com/grp11/home.html?username=${username}`;
             })
             .catch(error => {
                 // Handle any errors here

@@ -1,5 +1,5 @@
 const express = require('express');
-//const theUrl = require('./config');
+//const theUrl = require('');
 const mongoose = require("mongoose");
 const router = express.Router();
 const bodyParser = require('body-parser');
@@ -48,7 +48,7 @@ mongoose.connect('mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongo
 });
 
 //app.use(express.static(__dirname + '/../public'));
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../')));
   //prefix : theUrl
 //})); // Serve the "public" directory
 //app.use('/backend', express.static(path.join(__dirname, '.')));  // Serve the current directory (backend)
@@ -156,14 +156,14 @@ const collection4 = mongoose.model('landed_flights', landedFlightsSchema);
 */
 
 app.get("/", (req, res) => {
-  const filePath = path.join(__dirname, "../public/index.html");
+  const filePath = path.join(__dirname, "../index.html");
   res.sendFile(filePath);
 });
 
 
 
 app.get("/signup", (req, res) => {
-  const filePath = path.join(__dirname,"../public/signup.html");
+  const filePath = path.join(__dirname,"../signup.html");
   res.sendFile(filePath);
 });
 
@@ -177,7 +177,7 @@ app.post("/signup", async (req, res) => {
     };
     const existingUser = await Users.findOne({ name: req.body.name });
     if (existingUser) {
-      const filePath = path.join(__dirname,"../public/nameExists.html");
+      const filePath = path.join(__dirname,"../nameExists.html");
       res.sendFile(filePath);
     } else {
       await Users.insertMany([data]);
@@ -189,7 +189,7 @@ app.post("/signup", async (req, res) => {
         useUnifiedTopology: true
       });
       connectionUser.model('User', User.schema);
-      const filePath = path.join(__dirname, "../public/login.html");
+      const filePath = path.join(__dirname, "../login.html");
       res.sendFile(filePath);
     }
     
@@ -206,9 +206,9 @@ app.post("/signup", async (req, res) => {
 });
 
 app.get("/home", (req, res) =>{
-  console.log('inside home');
+  //console.log('inside home');
   const username = req.query.username;
-  const filePath = path.join(__dirname, "../public/home.html");
+  const filePath = path.join(__dirname, "../home.html");
   res.sendFile(filePath);
 });
 
@@ -230,11 +230,11 @@ app.post("/login", async (req, res) => {
       res.json({ success: true, message: 'Login successful' });
       
     } else {
-      const filePath = path.join(__dirname,"../public/loginwrong.html");
+      const filePath = path.join(__dirname,"../loginwrong.html");
       res.sendFile(filePath);
     }
   } catch (error) {
-    const filePath = path.join(__dirname,"../public/loginwrong.html");
+    const filePath = path.join(__dirname,"../loginwrong.html");
     res.sendFile(filePath);
   }
 });
@@ -370,7 +370,7 @@ deleteDataFromCollections()
 
 app.get('/themap', (req, res) => {
   const username = req.query.username;
-  res.sendFile(path.join(__dirname,"/public/themap.html"));
+  res.sendFile(path.join(__dirname,"/themap.html"));
 });
 
 
