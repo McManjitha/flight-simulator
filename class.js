@@ -27,21 +27,21 @@ class Flight{
         this.landed = true;
     }
 
-    rearrangeArray(inputString){
-        // remove initial '[' and final ']' characters
-        inputString = inputString.slice(1, -1);
-        // split the input string by commas
-        const elements = inputString.split(",");
-        // create a new array of strings
-        const outputArray = elements.map((element) => {
-          // remove any leading or trailing whitespace
-          element = element.trim();
-          // return the element as a string
-          return String(element);
-        });
-        // return the output array
-        return outputArray;
-    }
+    // rearrangeArray(inputString){
+    //     // remove initial '[' and final ']' characters
+    //     inputString = inputString.slice(1, -1);
+    //     // split the input string by commas
+    //     const elements = inputString.split(",");
+    //     // create a new array of strings
+    //     const outputArray = elements.map((element) => {
+    //       // remove any leading or trailing whitespace
+    //       element = element.trim();
+    //       // return the element as a string
+    //       return String(element);
+    //     });
+    //     // return the output array
+    //     return outputArray;
+    // }
 
     createMarker(){
         const newMarker = new google.maps.Marker({
@@ -89,10 +89,14 @@ class Flight{
         // creates the marker of the planes
         this.marker = this.createMarker();
 
-        this.marker.addListener("click", function(){
-            console.log(this.setTitle);
+        this.marker.addListener("click", () =>{
+            slidingComponent.style.left = "0";
+            displayInfo(this.callsign, this.departure_time, this.origin, this.dest, this.routing);
+            //console.log(this.setTitle);
         })
     }
+
+    
 
     incrementing(){
         //console.log("inside incrementing");

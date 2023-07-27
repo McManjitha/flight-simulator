@@ -266,11 +266,11 @@ function main(){
   //   let ob1 =
   //   {
   //   "Callsign": "TR2466",
-  //   Departure_Time: "05.35.15",
+  //   Departure_Time: "05.02.15",
   //   "Destination Info": "WMKK",
   //   "Origin Info": "WSSS",
   //   Routing: "WSSS_WMKK",
-  //   "path": "[WSSS,VTK,VJR,GUPTA,VKL,WMKK]",
+  //   "path": "[WSSS , VTK,VJR,GUPTA,VKL,WMKK]",
   //   "Altitude": "[7000,41000,41000,41000,41000,7000]"
   //   }
 
@@ -347,6 +347,13 @@ function main(){
         });
       }
     }
+  });
+
+  const closeButton = document.getElementById("closeButton");
+
+  closeButton.addEventListener("click", () => {
+    // Hide the sliding component by adjusting its 'left' property
+    slidingComponent.style.left = "-300px";
   });
 
   document.getElementById('createCSV').addEventListener('click', function() {

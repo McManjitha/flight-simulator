@@ -147,20 +147,16 @@ function initalString_2(initLat, initLng, nextLat, nextLng){
 
 }
 
-function rearrangeArray(inputString){
-  //console.log("rearrangeArray");
-  //console.log("inputString");
-  //console.log(inputString);
+function rearrangeArray(inputString) {
   // remove initial '[' and final ']' characters
   inputString = inputString.slice(1, -1);
   // split the input string by commas
   const elements = inputString.split(",");
   // create a new array of strings
   const outputArray = elements.map((element) => {
-    // remove any leading or trailing whitespace
-    element = element.trim();
+    // remove any leading or trailing whitespace and spaces
+    element = element.trim().replace(/^\s+|\s+$/g, '');
     // return the element as a string
-    
     return String(element);
   });
   // return the output array
@@ -219,5 +215,16 @@ function flattenAndRemoveDuplicates(array2D) {
     }
   }
   return result;
+}
+
+function displayInfo(callsign, departure_time, origin, dest, routing) {
+  console.log('display')
+  console.log(callsign)
+
+  document.getElementById("callsignLabel").textContent = callsign;
+  document.getElementById("departureTimeLabel").textContent = departure_time;
+  document.getElementById("originLabel").textContent = origin;
+  document.getElementById("destinationLabel").textContent = dest;
+  document.getElementById("routingLabel").textContent = routing;
 }
 
