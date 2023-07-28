@@ -2,7 +2,7 @@
 //------------------ variables --------------------------------------
 var gateWays = []; // contain waypoints
 var allFlights = [];
-var flightInfo = [[], []]; // contain information about flights
+var flightInfo = []; // contain information about flights
 var firstWaypoint, secondWaypoint, firstLabel, secondLabel;
 var flightMarkers = []; // contain all the flight markers
 var currentFLight; // used in second setInterval
@@ -24,11 +24,14 @@ let uniqueAltitudes = [];
 let namingObject = {};// contains the naming of the flightInfo array rows
 const urlParams = new URLSearchParams(window.location.search);
 const username = urlParams.get('username');
+//const theUrl = 'https://demo.eminenceapps.com';
+const theUrl = '';
 
 // sends a get request to fetch waypoint data
 function getWaypoints(){
   const xhr1 = new XMLHttpRequest();
-  const url = apiUrl+'/wayPoints?username=' + encodeURIComponent(username);
+  //console.log('heeyyy = '+apiUrl);
+  const url = theUrl+'/grp11/backend/wayPoints?username=' + encodeURIComponent(username);
   xhr1.open('GET', url, true);
   xhr1.setRequestHeader('Content-Type', 'application/json');
 
@@ -64,7 +67,7 @@ function firstRequest() {
 
   // Perform your AJAX request here
   const xhr = new XMLHttpRequest();
-  const url = apiUrl+'/data?time=' + encodeURIComponent(data)+'&username='+encodeURIComponent(username); // Include the string as a query parameter
+  const url = theUrl+'/grp11/backend/data?time=' + encodeURIComponent(data)+'&username='+encodeURIComponent(username); // Include the string as a query parameter
   xhr.open('GET', url, true);
   xhr.setRequestHeader('Content-Type', 'application/json');
 
@@ -105,7 +108,7 @@ function sendRequest() {
 
   // Perform your AJAX request here
   const xhr = new XMLHttpRequest();
-  const url = apiUrl+'/data?time=' + encodeURIComponent(data) + '&username=' + encodeURIComponent(username) ; // Include the string as a query parameter
+  const url = theUrl+'/grp11/backend/data?time=' + encodeURIComponent(data) + '&username=' + encodeURIComponent(username) ; // Include the string as a query parameter
   xhr.open('GET', url, true);
   xhr.setRequestHeader('Content-Type', 'application/json');
 
@@ -128,7 +131,7 @@ function sendRequest() {
 function getAltitudes(){
   return new Promise(function(resolve, reject) {
     const xhr2 = new XMLHttpRequest();
-    const url = apiUrl+'/altitudes?username=' + encodeURIComponent(username); 
+    const url = theUrl+'/grp11/backend/altitudes?username=' + encodeURIComponent(username); 
     xhr2.open('GET', url, true);
     xhr2.setRequestHeader('Content-Type', 'application/json');
 
@@ -141,6 +144,7 @@ function getAltitudes(){
             altitudesArr[1] = rearrangeArray(altitudes.Cruise_Levels);
             altitudesArr[2] = rearrangeArray(altitudes.Decent_levels);
 
+            // remove the duplicates and create an array with unique altitude values
             uniqueAltitudes = flattenAndRemoveDuplicates(altitudesArr);
             //console.log("uniqueAltitudes");
             //console.log(uniqueAltitudes);
@@ -156,6 +160,17 @@ function getAltitudes(){
     };
     xhr2.send();
   });
+}
+
+function handleAltitudeLevels(flight, altitude){
+  if(altitude in namingObject){
+    flightInfo[namingObject[altitude]].push(flight);
+
+  }else if(!(altitude in namingObject)){
+    namingObject[altitude] = Object.keys(namingObject).length;
+    flightInfo.push([]);
+    flightInfo[namingObject[altitude]].push(flight);
+  }
 }
 
 
@@ -244,19 +259,19 @@ function main(){
 
   getWaypoints();
   scheduleRequest();
-  namingflightInfo();
+  //namingflightInfo();
 //  
 
   // setTimeout(function(){
   //   let ob1 =
   //   {
   //   "Callsign": "TR2466",
-  //   Departure_Time: "05.14.30",
+  //   Departure_Time: "05.35.15",
   //   "Destination Info": "WMKK",
   //   "Origin Info": "WSSS",
   //   Routing: "WSSS_WMKK",
-  //   "path": ["[WSSS,VTK,VJR,GUPTA,VKL,WMKK]"],
-  //   "Altitude": ["[7000,41000,41000,41000,41000,7000]"]
+  //   "path": "[WSSS,VTK,VJR,GUPTA,VKL,WMKK]",
+  //   "Altitude": "[7000,41000,41000,41000,41000,7000]"
   //   }
 
   //   allFlights.push(new Flight(ob1));
@@ -282,23 +297,26 @@ function main(){
     //console.log('flightInfo = '+flightInfo);
     for(let m = 0; m < allFlights.length; m++){
       if(compareTime(allFlights[m].departure_time, allFlights[m].callsign)){ 
-        for(let j = 0; j < altitudesArr[0].length; j++){
-          //console.log("the flight");
-          //console.log(allFlights[m]);
-          if((allFlights.length > 0) && (allFlights[m].currentAltitude == altitudesArr[0][j])){
-            allFlights[m].landed = true;
-            flightInfo[namingObject[altitudesArr[0][j]]].push(allFlights[m]);
-            allFlights.splice(m, 1);
-            m--;
-          }
+        if((allFlights.length > 0) && (allFlights[m].currentAltitude in namingObject)){
+          allFlights[m].landed = true;
+          flightInfo[namingObject[allFlights[m].currentAltitude]].push(allFlights[m]);
+          allFlights.splice(m, 1);
+          m--;
+        }else if((allFlights.length > 0) && !(allFlights[m].currentAltitude in namingObject)){
+          namingObject[allFlights[m].currentAltitude] = Object.keys(namingObject).length;
+          flightInfo.push([]);
+          flightInfo[namingObject[allFlights[m].currentAltitude]].push(allFlights[m]);
+          allFlights[m].landed = true;
+          allFlights.splice(m, 1);
+          m--;
         }
       }
     }
     //console.log("allFlights = ");
     //console.log(allFlights);
 
-    //console.log("flightInfo = ");
-    //console.log(flightInfo);
+    console.log("flightInfo = ");
+    console.log(flightInfo);
     
 
   }, 7000);
@@ -334,7 +352,7 @@ function main(){
   document.getElementById('createCSV').addEventListener('click', function() {
     // Button click logic goes here
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', '/download-landed-flights', true);
+    xhr.open('GET', theUrl+'/grp11/backend/download-landed-flights?username='+ encodeURIComponent(username), true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.responseType = 'blob'; // Set the response type to blob
 
@@ -354,37 +372,43 @@ function main(){
 
   //-------------------------------------------------------------------------------------------
   setTimeout(function() {
-      // this repeats at 1000ms intervals and calculate the new location of the plane
+      // this repeats at 2000ms intervals and calculate the new location of the plane
     intervalId1 = setInterval(function() {
       // Get the new coordinates for the marker
-      for(let j = 0; j < flightInfo.length; j++){ // iterate through flight levels
+      for(let j = 0; j < flightInfo.length; j++){ // iterate through flight levels j = 0
         if(flightInfo[j].length > 0){
-          for(var k = 0; k < flightInfo[j].length; k++){
-            flightInfo[j][k].incrementing();
+          for(var k = 0;k < flightInfo[j].length; k++){   //k = 0
+            
+            if (flightInfo[j][k] instanceof Flight) {
+              flightInfo[j][k].incrementing();
 
-            if(flightInfo[j][k].going){
-              // At this point the flight reaches a waypoint
-              if(flightInfo[j][k].initLat > flightInfo[j][k].nextLat){
-                // Going down the map.
-                if( flightInfo[j][k].marker.getPosition().lat() < flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
-                  if(flightInfo[j][k].waypointChanging_down(j, k) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){
-                    let arrayName = flightInfo[j][k].currentAltitude;
-                    let removedFlight = flightInfo[j].splice(k, 1);
-                    flightInfo[namingObject[arrayName]].push(removedFlight[0]);
-                    k--;
+              if(flightInfo[j][k].going){
+                // At this point the flight reaches a waypoint
+                if(flightInfo[j][k].initLat > flightInfo[j][k].nextLat){
+                  // Going down the map.
+                  if( flightInfo[j][k].marker.getPosition().lat() < flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
+                    if(flightInfo[j][k].waypointChanging_down(j, k, username) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){
+                      //console.log('changing altitude')
+                      let arrayName = flightInfo[j][k].currentAltitude;
+                      let removedFlight = flightInfo[j].splice(k, 1)[0];
+                      //console.log('flight removed')
+                      handleAltitudeLevels(removedFlight, arrayName);
+                      k--;
+                    }
+
                   }
+                  //going up the map
+                }else if(flightInfo[j][k].initLat <   flightInfo[j][k].nextLat){
+                  if( flightInfo[j][k].marker.getPosition().lat() > flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
+                    // Here, the plane reaches a destination gateway. Then it assign coordinates of the 
+                    // previous journey end gateway to initial gateway coordiates of the next journey
+                    if(flightInfo[j][k].waypointChanging_up(j, k, username) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){
 
-                }
-                //going up the map
-              }else if(flightInfo[j][k].initLat <   flightInfo[j][k].nextLat){
-                if( flightInfo[j][k].marker.getPosition().lat() > flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
-                  // Here, the plane reaches a destination gateway. Then it assign coordinates of the 
-                  // previous journey end gateway to initial gateway coordiates of the next journey
-                  if(flightInfo[j][k].waypointChanging_up(j, k) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){
-                    let arrayName = flightInfo[j][k].currentAltitude;
-                    let removedFlight = flightInfo[j].splice(k, 1);
-                    flightInfo[namingObject[arrayName]].push(removedFlight[0]);
-                    k--;
+                      let arrayName = flightInfo[j][k].currentAltitude;
+                      let removedFlight = flightInfo[j].splice(k, 1)[0];
+                      handleAltitudeLevels(removedFlight, arrayName);
+                      k--;
+                    }
                   }
                 }
               }

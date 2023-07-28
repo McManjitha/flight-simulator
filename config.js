@@ -1,2 +1,2 @@
-//var apiUrl = 'http://demo.eminenceapps.com/grp11';
-var apiUrl = '';
+var apiUrl = 'https://demo.eminenceapps.com';
+//var apiUrl = '';

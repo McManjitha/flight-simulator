@@ -101,9 +101,9 @@ class Flight{
         this.marker.setPosition({lat: this.lat, lng: this.lng});
     }
 
-    waypointChanging_down(j, k){
+    waypointChanging_down(j, k, username){
         //console.log("inside down");
-        if(this.isDestinationReached(j, k)){
+        if(this.isDestinationReached(j, k, username)){
             return 0;
         }
         this.initLat =  this.nextLat;
@@ -111,7 +111,7 @@ class Flight{
         let temp1 = gateWays.find((obj) => obj.label == this.route[this.count]);
         this.nextLat = temp1.lat;
         this.nextLng = temp1.lng;
-        this.m = calcGradient(this.initLng, this.initLat,this.nextLng, this.nextLat)
+        this.m = calcGradient(this.initLng, this.initLat,this.nextLng, this.nextLat);
         this.c = calcIntercept(this.nextLng, this.nextLat, this.m);
         this.tanvalue = clacPlaneAngle(this.m);
         if(this.initLat > this.nextLat){
@@ -132,12 +132,12 @@ class Flight{
         return 1;
     }
 
-    sendDestinationPost(){
+    sendDestinationPost(username){
         let xhr = new XMLHttpRequest();
         const localDate = new Date();
         let destinationTime = localDate.getHours()+':'+localDate.getMinutes()+':'+localDate.getSeconds();
 
-        let url = '/destination?callSign='+encodeURIComponent(this.callsign)+'&startTime='+encodeURIComponent(this.departure_time)+'&endTime=' + encodeURIComponent(destinationTime) + '&lat='+encodeURIComponent(this.nextLat)+'&lng=' + encodeURIComponent(this.nextLng);
+        let url = apiUrl+'/grp11/destination?username='+encodeURIComponent(username)+'&callSign='+encodeURIComponent(this.callsign)+'&startTime='+encodeURIComponent(this.departure_time)+'&endTime=' + encodeURIComponent(destinationTime) + '&lat='+encodeURIComponent(this.nextLat)+'&lng=' + encodeURIComponent(this.nextLng);
         xhr.open('POST', url, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
 
@@ -154,7 +154,7 @@ class Flight{
     
     }
 
-    isDestinationReached(j, k){
+    isDestinationReached(j, k, username){
         //console.log("inside reached");
         this.count = this.count + 1;
         this.prevAltitude = this.currentAltitude;
@@ -168,23 +168,23 @@ class Flight{
             this.marker.setPosition({lat : this.nextLat, lng : this.nextLng});
             this.going = false;
             this.landed = true;
-            this.sendDestinationPost();
+            this.sendDestinationPost(username);
             try{
                 flightInfo[j].splice(k, 1);
             }catch(error){
                 console.log(error);
-                console.log('callsign = '+this.callsign);
-                console.log('j = '+j);
-                console.log('k = '+k);
+                //console.log('callsign = '+this.callsign);
+                //console.log('j = '+j);
+                //console.log('k = '+k);
             }
             return 1;
         }
         return 0;
     }
 
-    waypointChanging_up(j, k){
+    waypointChanging_up(j, k, username){
         //console.log("inside up");
-        if(this.isDestinationReached(j, k)){
+        if(this.isDestinationReached(j, k, username)){
             return 0;
         }
         this.initLat =  this.nextLat;

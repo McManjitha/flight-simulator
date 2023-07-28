@@ -24,6 +24,20 @@
     <title>SignUp</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
+        form{
+            height: 550px;
+            width: 400px;
+            background-color: rgba(255,255,255,0.13);
+            position: absolute;
+            transform: translate(-50%,-50%);
+            top: 50%;
+            left: 50%;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+        }
         .head-top {
             padding-bottom: 100px;
             margin-bottom: 50px; /* Added margin-bottom to create space */
@@ -34,9 +48,55 @@
             align-items: center;
             min-height: 100vh;
         }
+
+        form *{
+            font-family: 'Poppins',sans-serif;
+            color: #030303;
+            letter-spacing: 0.5px;
+            outline: none;
+            border: none;
+        }
+        form h3{
+            font-size: 32px;
+            font-weight: 500;
+            line-height: 42px;
+            text-align: center;
+        }
+
+        label{
+            display: block;
+            margin-top: 30px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        input{
+            display: block;
+            height: 50px;
+            width: 100%;
+            background-color: rgba(255,255,255,0.07);
+            border-radius: 3px;
+            padding: 0 10px;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 300;
+        }
+        ::placeholder{
+            color: #474747;
+        }
+        button{
+            margin-top: 5px;
+            width: 100%;
+            background-color: #ffffff;
+            color: #080710;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+        }
         
-        .signup-box {
-            margin-top: 100px
+        .login-box {
+            margin-top: 100px;
             margin-bottom: 100px;
             width: 50%;
             margin: 100px auto;
@@ -57,7 +117,7 @@
             margin-bottom: 20px;
         }
 
-        .signup-background {
+        .login-background {
             position: absolute;
             top: 0;
             left: 0;
@@ -119,22 +179,36 @@
         </div>
     </header>
     
-    <div class="signup-background"></div>
+    <div class="login-background"></div>
     <div id="error-message" class="text-center mt-3"></div>
-    <div class="signup-box">
-        <h2 class="signup-title">Sign Up</h2>
-        <form action="/signup" method="post">
-            <div class="form-group">
-                <input type="text" class="form-control" name="name" placeholder="Name">
-            </div>
-            <div class="form-group">
-                <input type="password" class="form-control" name="password" id="password" placeholder="Password">
-            </div>
-            <div class="form-group">
-                <input type="password" class="form-control" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password">
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+        <form>
+            <h3>Sign Up Here</h3>
+    
+            <label for="username">Username</label>
+            <input type="text" placeholder="Email or Phone" id="username">
+    
+            <label for="password">Password</label>
+            <input type="password" placeholder="Password" id="password">
+
+            <label for="password">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="password" placeholder="Confirm password"  required><br>
+    
+            <button onclick="validateForm()">Sign In</button>
+             
+            
         </form>
+        <!--<form id="loginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br>
+        
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br>
+
+            <label for="password">Confirm Password:</label>
+            <input type="password" id="confirmPassword" name="password" required><br>
+        
+            <input type="submit" value="Submit" onclick="validateForm()">
+          </form>-->
     </div>
    
     
@@ -144,8 +218,10 @@
     <script src="js/bootstrap.bundle.min.js "></script>
     <script src="js/jquery-3.0.0.min.js "></script>
     <script src="js/custom.js "></script>
+    <script src="config.js"></script>
     <script>
         function validateForm() {
+            event.preventDefault();
             var password = document.getElementById("password").value;
             var confirmPassword = document.getElementById("confirmPassword").value;
 
@@ -154,7 +230,35 @@
                 return false;
             }
 
-            return true;
+            gotoLogin();
+        }
+
+        function gotoLogin(){
+            //event.preventDefault(); // Prevent the form from submitting normally
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+
+            //fetch(`https://demo.eminenceapps.com/grp11/login?username=${username}&password=${password}`, {
+            fetch(apiUrl+`/grp11/backend/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body : JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Process the response here
+                console.log("response received");
+                //console.log('data = '+data);
+                window.location.href = `/grp11/login.html?username=${username}`;
+               //window.location.href = `https://demo.eminenceapps.com/grp11/home.html?username=${username}`;
+
+            })
+            .catch(error => {
+                // Handle any errors here
+                //console.error(error);
+            });
         }
     </script>
 </body>

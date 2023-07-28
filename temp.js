@@ -66,10 +66,10 @@ const upload = multer({ storage });
 
 
 
-app.get("/", (req, res) => {
-  const filePath = path.join(__dirname, "/index.html");
-  res.sendFile(filePath);
-});
+// app.get("/", (req, res) => {
+//   const filePath = path.join(__dirname, "/index.html");
+//   res.sendFile(filePath);
+// });
 
 app.get("/signup", (req, res) => {
   const filePath = path.join(__dirname,"/signup.html");

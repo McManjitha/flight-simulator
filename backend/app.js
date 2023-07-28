@@ -1,3 +1,5 @@
+//http://localhost:3000/themap.html?username=ff
+
 const express = require('express');
 //const theUrl = require('');
 const mongoose = require("mongoose");
@@ -25,6 +27,7 @@ var planeList = [];
 const apiUrl = '';
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json()); 
 app.use(session({
   secret: 'secret key',
   resave: false,
@@ -47,11 +50,16 @@ mongoose.connect('mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongo
   console.log('Error connecting to MongoDB', error);
 });
 
-//app.use(express.static(__dirname + '/../public'));
-app.use(express.static(path.join(__dirname, '../')));
-  //prefix : theUrl
-//})); // Serve the "public" directory
-//app.use('/backend', express.static(path.join(__dirname, '.')));  // Serve the current directory (backend)
+app.get("/", (req, res) => {
+  const filePath = path.join(__dirname, "../index.html");
+  res.sendFile(filePath);
+});
+
+app.get("/grp11/backend/signup", (req, res) => {
+  const filePath = path.join(__dirname,"../signup.html");
+  res.sendFile(filePath);
+});
+
 
 const collectionNames = ['5-6', '6-7']; // Define the collection names
 
@@ -155,42 +163,33 @@ const landedFlightsSchema = new mongoose.Schema({
 const collection4 = mongoose.model('landed_flights', landedFlightsSchema);
 */
 
-app.get("/", (req, res) => {
-  const filePath = path.join(__dirname, "../index.html");
-  res.sendFile(filePath);
-});
 
 
-
-app.get("/signup", (req, res) => {
-  const filePath = path.join(__dirname,"../signup.html");
-  res.sendFile(filePath);
-});
-
-app.post("/signup", async (req, res) => {
+app.post("/grp11/backend/signup", async (req, res) => {
 
   try {
     // Create a new database for the user using their email as the database name
     const data = {
-      name: req.body.name,
+      name: req.body.username,
       password: req.body.password,
     };
-    const existingUser = await Users.findOne({ name: req.body.name });
+
+    const existingUser = await Users.findOne({ name: req.body.username });
     if (existingUser) {
       const filePath = path.join(__dirname,"../nameExists.html");
       res.sendFile(filePath);
     } else {
       await Users.insertMany([data]);
-      const userDbName = req.body.name;
+      const userDbName = req.body.username;
       //const connectionUser = await mongoose.createConnection(`mongodb://127.0.0.1:27017/${userDbName}`, {
       const connectionUser = await mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${userDbName}?retryWrites=true&w=majority`, {
-
         useNewUrlParser: true,
         useUnifiedTopology: true
       });
       connectionUser.model('User', User.schema);
-      const filePath = path.join(__dirname, "../login.html");
-      res.sendFile(filePath);
+      //const filePath = path.join(__dirname, "../login.html");
+      //res.sendFile(filePath);
+      res.json({ success: true, message: 'Login successful' });
     }
     
 
@@ -205,7 +204,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/home", (req, res) =>{
+app.get("/grp11/backend/home", (req, res) =>{
   //console.log('inside home');
   const username = req.query.username;
   const filePath = path.join(__dirname, "../home.html");
@@ -213,7 +212,7 @@ app.get("/home", (req, res) =>{
 });
 
 
-app.post("/login", async (req, res) => {
+app.post("/grp11/backend/login", async (req, res) => {
   console.log("login");
   //const connection = mongoose.createConnection(`mongodb://127.0.0.1:27017/LoginSignUp`, {
   const connection = mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/?retryWrites=true&w=majority/LoginSignUp`, {
@@ -222,10 +221,11 @@ app.post("/login", async (req, res) => {
       useUnifiedTopology: true
   })
   try {
-    console.log('name = '+req.query.username);
-    const check = await Users.findOne({ name: req.query.username });
+    const{username, password} = req.body;
+    console.log('name = '+username);
+    const check = await Users.findOne({ name: username });
     console.log(check);
-    if (check && check.password === req.query.password) {
+    if (check && check.password === password) {
       console.log('login success');
       res.json({ success: true, message: 'Login successful' });
       
@@ -240,7 +240,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Handle POST request
-app.post('/upload', upload.array('file', 4), async (req, res) => {
+app.post('/grp11/backend/upload', upload.array('file', 4), async (req, res) => {
   const files = req.files;
   const username = req.query.username;
   
@@ -368,14 +368,14 @@ deleteDataFromCollections()
   //res.redirect('/googlemap');
 });
 
-app.get('/themap', (req, res) => {
-  const username = req.query.username;
-  res.sendFile(path.join(__dirname,"/themap.html"));
-});
+// app.get('/themap', (req, res) => {
+//   const username = req.query.username;
+//   res.sendFile(path.join(__dirname,"/themap.html"));
+// });
 
 
 // Handling the request for waypoints
-app.get('/wayPoints', async (req, res) => {
+app.get('/grp11/backend/wayPoints', async (req, res) => {
   //const connectionUser = await mongoose.createConnection(`mongodb://127.0.0.1:27017/${req.query.username}`, {
   const connectionUser = await mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
 
@@ -396,7 +396,7 @@ app.get('/wayPoints', async (req, res) => {
   });
 });
 
-app.get('/altitudes', async (req, res) => {
+app.get('/grp11/backend/altitudes', async (req, res) => {
   // const connectionUser = await mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
   //     useNewUrlParser: true,
   //     useUnifiedTopology: true
@@ -443,7 +443,7 @@ app.get('/altitudes', async (req, res) => {
 });
 
 // handling the request for the flight data
-app.get('/data', async (req, res) => {
+app.get('/grp11/backend/data', async (req, res) => {
   // Process the request and fetch data from the database
   //console.log("Plane fetch request received"+count);
   console.log("Inside data");
@@ -466,13 +466,13 @@ app.get('/data', async (req, res) => {
   });
 });
 
-app.post('/destination', (req, res) => {
+app.post('/grp11/backend/destination', async (req, res) => {
   //let { callSign, startTime, endTime, lat, lng } = req.body;
-  const connectionUser =  mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
+  const connectionUser = await  mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
       useNewUrlParser: true,
       useUnifiedTopology: true
   });
-  const collectionD = connectionUser.model('landed_flights', LandedFlightModel.schema);
+  const collectionD = connectionUser.model('LandedFlightModel', LandedFlightModel.schema);
   let landedFlight = new collectionD({
     'callSign' : req.query.callSign,
     'departure_time' : req.query.startTimee,
@@ -493,11 +493,17 @@ app.post('/destination', (req, res) => {
 })
 
 // Route to handle the GET request
-app.get('/download-landed-flights', async (req, res) => {
+app.get('/grp11/backend/download-landed-flights', async (req, res) => {
   console.log("request received");
   try {
     // Fetch the documents from the "landed_flights" collection
-    const landedFlights = await LandedFlights.find({});
+    const connectionUser =  mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    //const collectionD = connectionUser.model('landed_flights', LandedFlightModel.schema);
+    const collectionD = connectionUser.model('LandedFlightModel', LandedFlightModel.schema);
+    const landedFlights = await collectionD.find({});
 
     // Convert the retrieved documents to a CSV string
     const csv = json2csv(landedFlights, { fields: ['callSign', 'departure_time', 'landed_time', 'lat', 'lng'] });
@@ -513,6 +519,9 @@ app.get('/download-landed-flights', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+
+app.use(express.static(path.join(__dirname, '../')));
 
 
 

@@ -26,6 +26,20 @@
     <!--<script src="../backend/config.js"></script>-->
 
     <style>
+        form{
+            height: 520px;
+            width: 400px;
+            background-color: rgba(255,255,255,0.13);
+            position: absolute;
+            transform: translate(-50%,-50%);
+            top: 50%;
+            left: 50%;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(8,7,16,0.6);
+            padding: 50px 35px;
+        }
         .head-top {
             padding-bottom: 100px;
             margin-bottom: 50px; /* Added margin-bottom to create space */
@@ -35,6 +49,52 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+        }
+
+        form *{
+            font-family: 'Poppins',sans-serif;
+            color: #030303;
+            letter-spacing: 0.5px;
+            outline: none;
+            border: none;
+        }
+        form h3{
+            font-size: 32px;
+            font-weight: 500;
+            line-height: 42px;
+            text-align: center;
+        }
+
+        label{
+            display: block;
+            margin-top: 30px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        input{
+            display: block;
+            height: 50px;
+            width: 100%;
+            background-color: rgba(255,255,255,0.07);
+            border-radius: 3px;
+            padding: 0 10px;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 300;
+        }
+        ::placeholder{
+            color: #474747;
+        }
+        button{
+            margin-top: 50px;
+            width: 100%;
+            background-color: #ffffff;
+            color: #080710;
+            padding: 15px 0;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
         }
         
         .login-box {
@@ -123,9 +183,21 @@
     
     <div class="login-background"></div>
     <div id="error-message" class="text-center mt-3"></div>
-    <div class="login-box">
-        <h2 class="login-title">Login</h2>
-        <form id="loginForm">
+    <div>
+        <form>
+            <h3>Login Here</h3>
+    
+            <label for="username">Username</label>
+            <input type="text" placeholder="Email or Phone" id="username">
+    
+            <label for="password">Password</label>
+            <input type="password" placeholder="Password" id="password">
+    
+            <button onclick="checkUsername()">Log In</button>
+             <a href="/grp11/signup.html">Create Account</a>
+            
+        </form>
+        <!--<form id="loginForm">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required><br>
         
@@ -135,8 +207,8 @@
             <input type="submit" value="Submit" onclick="checkUsername()">
           </form>
         <p class="text-center mt-3">
-            <a href="/signup.html">Create Account</a>
-        </p>
+            <a href="/grp11/signup.html">Create Account</a>
+        </p>-->
     </div>
    
     
@@ -151,7 +223,7 @@
     <script>
         //import { apiUrl } from '../backend/config.js';
 
-        console.log(apiUrl);
+        //console.log(apiUrl);
         function checkUsername(){
             event.preventDefault(); // Prevent the form from submitting normally
             let username = document.getElementById("username").value;
@@ -159,18 +231,22 @@
 
             //const formData = new FormData(this); // Get form data
             
-            fetch(apiUrl+`/login?username=${username}&password=${password}`, {
+            //fetch(`https://demo.eminenceapps.com/grp11/login?username=${username}&password=${password}`, {
+            fetch(apiUrl+`/grp11/backend/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                body : JSON.stringify({ username, password })
             })
             .then(response => response.json())
             .then(data => {
                 // Process the response here
                 console.log("response received");
-                console.log('data = '+data);
-                window.location.href = apiUrl+`/home.html?username=${username}`;
+                //console.log('data = '+data);
+                //window.location.href = `/grp11/home.html?username=${username}`;
+               window.location.href = `https://demo.eminenceapps.com/grp11/home.html?username=${username}`;
+
             })
             .catch(error => {
                 // Handle any errors here
