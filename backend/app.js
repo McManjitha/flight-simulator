@@ -345,7 +345,8 @@ deleteDataFromCollections()
           Departure_Time : row.Departure_Time,
           Aircraft_Type : row.Aircraft_Type,
           Altitude : row.Altitude,
-          landed_time : row.landed_time
+          landed_time : row.landed_time,
+          Speed_multiplied : row.Speed_multiplied
         });
         //console.log(document);
         await document.save()

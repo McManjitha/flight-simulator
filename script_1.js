@@ -266,12 +266,13 @@ function main(){
   //   let ob1 =
   //   {
   //   "Callsign": "TR2466",
-  //   Departure_Time: "05.02.15",
+  //   Departure_Time: "15.40.10",
   //   "Destination Info": "WMKK",
   //   "Origin Info": "WSSS",
   //   Routing: "WSSS_WMKK",
-  //   "path": "[WSSS , VTK,VJR,GUPTA,VKL,WMKK]",
-  //   "Altitude": "[7000,41000,41000,41000,41000,7000]"
+  //   "path": "[WSSS,VTK,VJR,GUPTA,VKL,WMKK]",
+  //   "Altitude": "[7000,41000,41000,41000,41000,7000]",
+  //   "Speed_multiplied":"[1280, 3200, 3200, 3200, 3200, 1240]"
   //   }
 
   //   allFlights.push(new Flight(ob1));
@@ -311,6 +312,7 @@ function main(){
           m--;
         }
       }
+
     }
     //console.log("allFlights = ");
     //console.log(allFlights);
@@ -382,9 +384,9 @@ function main(){
       // this repeats at 2000ms intervals and calculate the new location of the plane
     intervalId1 = setInterval(function() {
       // Get the new coordinates for the marker
-      for(let j = 0; j < flightInfo.length; j++){ // iterate through flight levels j = 0
+      for(let j = 0; j < flightInfo.length; j++){ // iterate through flight levels 
         if(flightInfo[j].length > 0){
-          for(var k = 0;k < flightInfo[j].length; k++){   //k = 0
+          for(var k = 0;k < flightInfo[j].length; k++){   
             
             if (flightInfo[j][k] instanceof Flight) {
               flightInfo[j][k].incrementing();
@@ -394,6 +396,7 @@ function main(){
                 if(flightInfo[j][k].initLat > flightInfo[j][k].nextLat){
                   // Going down the map.
                   if( flightInfo[j][k].marker.getPosition().lat() < flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
+                    console.log('Waypoint reached');
                     if(flightInfo[j][k].waypointChanging_down(j, k, username) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){
                       //console.log('changing altitude')
                       let arrayName = flightInfo[j][k].currentAltitude;
@@ -407,6 +410,7 @@ function main(){
                   //going up the map
                 }else if(flightInfo[j][k].initLat <   flightInfo[j][k].nextLat){
                   if( flightInfo[j][k].marker.getPosition().lat() > flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
+                    console.log('Waypoint reached');
                     // Here, the plane reaches a destination gateway. Then it assign coordinates of the 
                     // previous journey end gateway to initial gateway coordiates of the next journey
                     if(flightInfo[j][k].waypointChanging_up(j, k, username) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){

@@ -228,3 +228,51 @@ function displayInfo(callsign, departure_time, origin, dest, routing) {
   document.getElementById("routingLabel").textContent = routing;
 }
 
+// Helper function to convert radians to degrees
+function toDegrees(radians) {
+  return radians * (180 / Math.PI);
+}
+// Helper function to convert degrees to radians
+function toRadians(degrees) {
+  return degrees * (Math.PI / 180);
+}
+// Function to calculate the new location along the straight line path
+function calculateNewPositionOnCircle(initialLatitude, initialLongitude, finalLatitude, finalLongitude, distance) {
+  const earthRadius = 6371000; // Earth's approximate radius in meters (WGS84 ellipsoid)
+
+  // Convert degrees to radians
+  const initialLatitudeRad = toRadians(initialLatitude);
+  const initialLongitudeRad = toRadians(initialLongitude);
+  const finalLatitudeRad = toRadians(finalLatitude);
+  const finalLongitudeRad = toRadians(finalLongitude);
+
+  // Calculate the angular distance between the two points
+  const angularDistance = 2 * Math.asin(Math.sqrt(
+      Math.pow(Math.sin((finalLatitudeRad - initialLatitudeRad) / 2), 2) +
+      Math.cos(initialLatitudeRad) * Math.cos(finalLatitudeRad) * Math.pow(Math.sin((finalLongitudeRad - initialLongitudeRad) / 2), 2)
+  ));
+
+  // Calculate the azimuth from the initial point to the final point
+  const azimuth = Math.atan2(
+      Math.sin(finalLongitudeRad - initialLongitudeRad) * Math.cos(finalLatitudeRad),
+      Math.cos(initialLatitudeRad) * Math.sin(finalLatitudeRad) -
+      Math.sin(initialLatitudeRad) * Math.cos(finalLatitudeRad) * Math.cos(finalLongitudeRad - initialLongitudeRad)
+  );
+
+  // Calculate the new latitude and longitude
+  const newLatitude = Math.asin(
+      Math.sin(initialLatitudeRad) * Math.cos(distance / earthRadius) +
+      Math.cos(initialLatitudeRad) * Math.sin(distance / earthRadius) * Math.cos(azimuth)
+  );
+  const newLongitude = initialLongitudeRad + Math.atan2(
+      Math.sin(azimuth) * Math.sin(distance / earthRadius) * Math.cos(initialLatitudeRad),
+      Math.cos(distance / earthRadius) - Math.sin(initialLatitudeRad) * Math.sin(newLatitude)
+  );
+
+  // Convert radians to degrees
+  const newLatitudeDeg = toDegrees(newLatitude);
+  const newLongitudeDeg = toDegrees(newLongitude);
+
+  return { latitude: newLatitudeDeg, longitude: newLongitudeDeg };
+}
+

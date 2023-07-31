@@ -77,6 +77,9 @@ const PlaneSchema = new mongoose.Schema({
     },
     landed_time : {
       type : String
+    },
+    Speed_multiplied : {
+      type : String
     }
 });
 
