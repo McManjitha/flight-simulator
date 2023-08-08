@@ -12,6 +12,7 @@
     <script src="./script_2.js"></script>
     <script src="./class.js"></script>
     <script src="./config.js"></script>
+    
 
 
 
@@ -56,6 +57,7 @@
       </nav>
     
     <div id="map" class="map1"></div>
+<!--  Sliding Component -->
     <div id="slidingComponent">
       <!-- Content for your sliding component goes here -->
       <button id="closeButton">&times;</button>
@@ -71,12 +73,14 @@
         <p id="destinationLabel">City B</p>
         <label>Routing:</label>
         <p id="routingLabel">Some route</p>
+        <button id="altitude-btn" data-info="" value="" name="" onclick="showGraph()">Altitude graph</button>
       </div>
     </div>
+  <!--  Sliding Component end  -->
     <div id="buttonContainer">
       <button id="createCSV" type="button" class="btn btn-warning">Create CSV</button>
     </div>
-    
+  <!-- Collision table start-->
     <div class="table-container">
       <table id="collision-table" class="styled-table">
         <thead >
@@ -90,6 +94,23 @@
         </thead>
       </table>
     </div>
+  <!-- Collision table end-->
+
+  <!-- Chart section start-->
+  <div class="tab-container">
+    <button class="tab-button" data-target="chart1">Chart 1</button>
+    <button class="tab-button" data-target="chart2">Chart 2</button>
+    <!-- Add more buttons for additional charts if needed -->
+
+    <div id="chart1" class="chart-container" data-xdata="['a', 'b', 'c', 'd', 'e']" data-ydata="[10, 15, 7, 8, 12]">
+      <canvas id="canvas1" width="350" height="200" ></canvas>
+    </div>
+    <div id="chart2" class="chart-container">
+      <canvas id="canvas2" width="350" height="200"></canvas>
+    </div>
+    <!-- Add more chart containers for additional charts if needed -->
+  </div>
+  <!-- Chart section end-->
     
 
     <!------------------------------FOOTER------------->
@@ -151,6 +172,46 @@
 
       defer
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="chart.js"></script>
+
+    <script>
+      function showGraph(){
+        console.log('clicked');
+        let value_callsign = document.getElementById('altitude-btn').dataset.info;
+        let value_time = document.getElementById('altitude-btn').value;
+        let value_name = document.getElementById('altitude-btn').name;
+        console.log('time = '+value_time);
+        console.log('callsign = '+value_callsign);
+
+        fetch(apiUrl+`/grp11/backend/altitudes?username=${username}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body : JSON.stringify({ value_time, value_callsign, value_name })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Process the response here
+            console.log("Plane clicking response received");
+            console.log(data);
+            let char1 = document.getElementById("chart1");
+            char1.setAttribute('data-ydata', data.numericalArray);
+            char1.setAttribute('data-xdata', data.stringArray);
+
+
+            //console.log('data = '+data);
+            //window.location.href = `/grp11/login.html?username=${username}`;
+            //window.location.href = `https://demo.eminenceapps.com/grp11/home.html?username=${username}`;
+
+        })
+        .catch(error => {
+            // Handle any errors here
+            //console.error(error);
+        });
+      }
+    </script>
     
     
   </body>

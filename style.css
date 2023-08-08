@@ -123,3 +123,25 @@ body {
   top: 100px;
 }
 
+.tab-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.tab-button {
+  background-color: #f4f4f4;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.tab-button:hover {
+  background-color: #ddd;
+}
+
+.chart-container {
+  display: none;
+  
+}
+

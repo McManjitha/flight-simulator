@@ -27,6 +27,7 @@ class Flight{
         this.landed = true;
         this.speeds = rearrangeArray(obj.Speed_multiplied);
         this.currentSpeed = parseFloat(this.speeds[0]);
+        this.collectionName = getHourRange(this.departure_time);
     }
 
     // rearrangeArray(inputString){
@@ -95,11 +96,19 @@ class Flight{
             slidingComponent.style.left = "0";
             displayInfo(this.callsign, this.departure_time, this.origin, this.dest, this.routing);
             //console.log(this.setTitle);
+            // Get a reference to the button element
+            const button = document.getElementById("altitude-btn");
+
+            // Set the dynamic value to the data-info attribute
+            button.setAttribute('data-info', this.callsign);
+            button.setAttribute('value', this.departure_time);
+            button.setAttribute('name', this.collectionName);
+
         })
     }
 
     incrementing(){
-        console.log("inside incrementing");
+        //console.log("inside incrementing");
         //console.log('old position lat = '+this.marker.getPosition().lat()+', lng = '+this.marker.getPosition().lng())
         const newLocation = calculateNewPositionOnCircle(
             this.marker.getPosition().lat(),
@@ -119,27 +128,27 @@ class Flight{
     }
 
     waypointChanging_down(j, k, username){
-        console.log("inside down");
+        //console.log("inside down");
         if(this.isDestinationReached(j, k, username)){
             return 0;
         }
         this.initLat =  this.nextLat;
         this.initLng = this.nextLng;
         let temp1 = gateWays.find((obj) => obj.label == this.route[this.count]);
-        console.log('next waypoint = ');
-        console.log(temp1);
+       // console.log('next waypoint = ');
+        //console.log(temp1);
         this.nextLat = temp1.lat;
         this.nextLng = temp1.lng;
-        console.log('nextlat = '+this.nextLat+', nextlng = '+this.nextLng);
+        //console.log('nextlat = '+this.nextLat+', nextlng = '+this.nextLng);
         this.m = calcGradient(this.initLng, this.initLat,this.nextLng, this.nextLat);
         this.c = calcIntercept(this.nextLng, this.nextLat, this.m);
         this.tanvalue = clacPlaneAngle(this.m);
         if(this.initLat > this.nextLat){
             this.tanvalue = this.tanvalue + 180;
         }
-        console.log('tanvalue = '+this.tanvalue);
+        //console.log('tanvalue = '+this.tanvalue);
         this.markerName = makeImageString(this.tanvalue-40);
-        console.log('marker name = '+this.markerName);
+        //console.log('marker name = '+this.markerName);
         let icon = {
             url: this.markerName,
             scaledSize: new google.maps.Size(20, 20)
@@ -206,7 +215,7 @@ class Flight{
     }
 
     waypointChanging_up(j, k, username){
-        console.log("inside up");
+        //console.log("inside up");
         if(this.isDestinationReached(j, k, username)){
             return 0;
         }
@@ -214,11 +223,11 @@ class Flight{
         this.initLng =this.nextLng;
         // plane stopping
         var temp2 = gateWays.find((obj) => obj.label == this.route[this.count]);
-        console.log('next waypoint = ');
-        console.log(temp2);
+        //console.log('next waypoint = ');
+        //console.log(temp2);
         this.nextLat = temp2.lat;
         this.nextLng = temp2.lng;
-        console.log('nextlat = '+this.nextLat+', nextlng = '+this.nextLng);
+        //console.log('nextlat = '+this.nextLat+', nextlng = '+this.nextLng);
 
         // calculate the new gradient and intercept of the next journey
         this.m = calcGradient(this.initLng, this.initLat,this.nextLng, this.nextLat)
@@ -228,9 +237,9 @@ class Flight{
         if(this.initLat >  this.nextLat){
             this.tanvalue = this.tanvalue + 180;
         }
-        console.log('tanvalue = '+this.tanvalue);
+        //console.log('tanvalue = '+this.tanvalue);
         this.markerName = makeImageString(this.tanvalue-40);
-        console.log('marker name = '+this.markerName);
+        //console.log('marker name = '+this.markerName);
 
         let icon = {
             url: this.markerName,

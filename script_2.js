@@ -236,6 +236,7 @@ function toDegrees(radians) {
 function toRadians(degrees) {
   return degrees * (Math.PI / 180);
 }
+
 // Function to calculate the new location along the straight line path
 function calculateNewPositionOnCircle(initialLatitude, initialLongitude, finalLatitude, finalLongitude, distance) {
   const earthRadius = 6371000; // Earth's approximate radius in meters (WGS84 ellipsoid)
@@ -274,5 +275,36 @@ function calculateNewPositionOnCircle(initialLatitude, initialLongitude, finalLa
   const newLongitudeDeg = toDegrees(newLongitude);
 
   return { latitude: newLatitudeDeg, longitude: newLongitudeDeg };
+}
+
+function createTimeCollection(){
+  const now = new Date();
+  const presentHour = now.getHours();
+  current_hour = presentHour;
+
+  // Calculate the next hour
+  const nextHour = (presentHour + 1) % 24;
+  return current_hour + '-' + nextHour;
+}
+
+function getHourRange(timeStr) {
+  // Parse the input time string
+  const [hours, minutes, seconds] = timeStr.split('.').map(Number);
+
+  // Calculate the hour based on minutes (and seconds) for finer resolution
+  const calculatedHour = hours + (minutes / 60) + (seconds / 3600);
+
+  // Determine the hour range
+  let hourRangeStart = Math.floor(calculatedHour);
+  let hourRangeEnd = hourRangeStart + 1;
+
+  // Adjust hour range for the case of 23rd hour
+  if (hourRangeStart === 23) {
+      hourRangeEnd = '00';
+  } else if (hourRangeEnd === 24) {
+      hourRangeStart = '23';
+  }
+
+  return `${hourRangeStart}-${hourRangeEnd}`;
 }
 

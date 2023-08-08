@@ -397,40 +397,40 @@ app.get('/grp11/backend/wayPoints', async (req, res) => {
   });
 });
 
-app.get('/grp11/backend/altitudes', async (req, res) => {
-  // const connectionUser = await mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
-  //     useNewUrlParser: true,
-  //     useUnifiedTopology: true
-  // });
-  // const collectionA = connectionUser.model('altitudeCollection', AltitudeCollection.schema);
-  // Promise.all([collectionA.findOne().exec()])
-  // .then((doc3) => {
-  //   const data = doc3[0];
-  //   console.log('altitudes');
-  //   console.log(doc3);
-  //   res.send(data);
-  // }).catch((err) => {
-  //   console.error(err);
-  // });
+app.post('/grp11/backend/altitudes', async (req, res) => {
+  console.log('Request received');
+  
   try {
     const connectionUser = await mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
 
-    connectionUser.on('connected', () => {
-      const collectionA = connectionUser.model('altitudeCollection', AltitudeCollection.schema);
+    const query = {
+      Departure_Time: req.body.value_time,
+      //Callsign : req.body.value_callsign
+    };
+    console.log(query);
+    console.log('collection = '+req.body.value_name);
 
-      collectionA.findOne().exec()
-        .then((doc) => {
-          console.log('altitudes');
-          console.log(doc);
-          res.send(doc);
-        })
-        .catch((err) => {
-          console.error(err);
-          res.status(500).send('Error retrieving data');
-        });
+    connectionUser.on('connected', () => {
+      const collectionP = connectionUser.model(req.body.value_name, PlaneModel.schema);
+
+      collectionP.findOne(query).exec()
+      .then((doc) => {
+        if (doc) {
+          console.log('Found document:');
+          const grphData = processStrings(doc.Altitude, doc.path);
+          res.send(grphData);
+        } else {
+          console.log('Document not found');
+          res.status(404).send('Document not found');
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error retrieving data');
+      });
     });
 
     connectionUser.on('error', (err) => {
@@ -448,6 +448,7 @@ app.get('/grp11/backend/data', async (req, res) => {
   // Process the request and fetch data from the database
   //console.log("Plane fetch request received"+count);
   console.log("Inside data");
+
   console.log("username = "+req.query.username);
   const connectionUser = await mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
       useNewUrlParser: true,
@@ -493,6 +494,7 @@ app.post('/grp11/backend/destination', async (req, res) => {
     });
 })
 
+
 // Route to handle the GET request
 app.get('/grp11/backend/download-landed-flights', async (req, res) => {
   console.log("request received");
@@ -523,6 +525,13 @@ app.get('/grp11/backend/download-landed-flights', async (req, res) => {
 
 
 app.use(express.static(path.join(__dirname, '../')));
+
+function processStrings(str1, str2) {
+  const arr1 = str1.slice(1, -1).split(',').map(Number);
+  const arr2 = str2.slice(1, -1).split(',');
+
+  return { numericalArray: arr1, stringArray: arr2 };;
+}
 
 
 

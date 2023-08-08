@@ -52,18 +52,19 @@ function getWaypoints(){
 
 function firstRequest() {
   // Get the present hour
-  console.log("Inside firstrequest");
-  const now = new Date();
-  const presentHour = now.getHours();
-  current_hour = presentHour;
-  console.log("current hour = "+presentHour);
+  // console.log("Inside firstrequest");
+  // const now = new Date();
+  // const presentHour = now.getHours();
+  // current_hour = presentHour;
+  // console.log("current hour = "+presentHour);
 
-  // Calculate the next hour
-  const nextHour = (presentHour + 1) % 24;
-  console.log("next hour = "+nextHour);
+  // // Calculate the next hour
+  // const nextHour = (presentHour + 1) % 24;
+  // console.log("next hour = "+nextHour);
 
-  // Create the string in the format "A-B"
-  const data = current_hour + '-' + nextHour;
+  // // Create the string in the format "A-B"
+  // const data = current_hour + '-' + nextHour;
+  const data = createTimeCollection();
 
   // Perform your AJAX request here
   const xhr = new XMLHttpRequest();
@@ -396,7 +397,7 @@ function main(){
                 if(flightInfo[j][k].initLat > flightInfo[j][k].nextLat){
                   // Going down the map.
                   if( flightInfo[j][k].marker.getPosition().lat() < flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
-                    console.log('Waypoint reached');
+                    //console.log('Waypoint reached');
                     if(flightInfo[j][k].waypointChanging_down(j, k, username) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){
                       //console.log('changing altitude')
                       let arrayName = flightInfo[j][k].currentAltitude;
@@ -410,7 +411,7 @@ function main(){
                   //going up the map
                 }else if(flightInfo[j][k].initLat <   flightInfo[j][k].nextLat){
                   if( flightInfo[j][k].marker.getPosition().lat() > flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
-                    console.log('Waypoint reached');
+                    //console.log('Waypoint reached');
                     // Here, the plane reaches a destination gateway. Then it assign coordinates of the 
                     // previous journey end gateway to initial gateway coordiates of the next journey
                     if(flightInfo[j][k].waypointChanging_up(j, k, username) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){
