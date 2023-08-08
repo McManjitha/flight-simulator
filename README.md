@@ -1,3 +1,2 @@
-Fast-Time-Flight-Plan Simulator
-
-An air traffic simulation web application
+# flight-simulator
+A web application that simulates flight plans on google maps. 
