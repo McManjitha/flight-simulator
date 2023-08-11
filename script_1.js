@@ -318,8 +318,8 @@ function main(){
     //console.log("allFlights = ");
     //console.log(allFlights);
 
-    console.log("flightInfo = ");
-    console.log(flightInfo);
+    //console.log("flightInfo = ");
+    //console.log(flightInfo);
     
 
   }, 7000);

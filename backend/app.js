@@ -420,7 +420,10 @@ app.post('/grp11/backend/altitudes', async (req, res) => {
       .then((doc) => {
         if (doc) {
           console.log('Found document:');
-          const grphData = processStrings(doc.Altitude, doc.path);
+          //const grphData = processStrings(doc.Altitude, doc.path);
+          //res.send(grphData);
+          console.log()
+          const grphData = { altitudes: removeBrackets(doc.Altitude), waypoints: removeBrackets(doc.path), speeds: removeBrackets(doc.Speed_multiplied) };
           res.send(grphData);
         } else {
           console.log('Document not found');
@@ -526,12 +529,13 @@ app.get('/grp11/backend/download-landed-flights', async (req, res) => {
 
 app.use(express.static(path.join(__dirname, '../')));
 
-function processStrings(str1, str2) {
-  const arr1 = str1.slice(1, -1).split(',').map(Number);
-  const arr2 = str2.slice(1, -1).split(',');
-
-  return { numericalArray: arr1, stringArray: arr2 };;
+function removeBrackets(inputString) {
+  if (inputString.startsWith('[') && inputString.endsWith(']')) {
+    return inputString.slice(1, -1);
+  }
+  return inputString;
 }
+
 
 
 

@@ -94,7 +94,7 @@ class Flight{
 
         this.marker.addListener("click", () =>{
             slidingComponent.style.left = "0";
-            displayInfo(this.callsign, this.departure_time, this.origin, this.dest, this.routing);
+            displayInfo(this.callsign, this.departure_time, this.route[0], this.route[this.route.length-1], this.routing);
             //console.log(this.setTitle);
             // Get a reference to the button element
             const button = document.getElementById("altitude-btn");
