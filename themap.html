@@ -78,6 +78,9 @@
     <div id="buttonContainer">
       <button id="createCSV" type="button" class="btn btn-warning">Download landed flight data</button>
     </div>
+    <div id="buttonContainer">
+      <button id="collision-btn" type="button" class="btn btn-warning">Download collision Info</button>
+    </div>
   <!-- Collision table start-->
     <div class="table-container">
       <table id="collision-table" class="styled-table">
@@ -94,12 +97,17 @@
     </div>
   <!-- Collision table end-->
 
+  <nav class="navbar bg-dark border-bottom border-body" data-bs-theme="dark">
+    <!-- Navbar content -->
+    <span style="margin-left: 40%;">
+      <button class="tab-button" data-target="chart1" style="color: black;">Altitude Plot</button>
+      <button class="tab-button" data-target="chart2" style="color: black;">Speed Plot</button>
+    </span>
+  </nav>
+
   <!-- Chart section start-->
   <div class="tab-container">
-    <span>
-      <button class="tab-button" data-target="chart1">Altitude Plot</button>
-      <button class="tab-button" data-target="chart2">Speed Plot</button>
-    </span>
+    
     
     <!-- Add more buttons for additional charts if needed -->
 
@@ -177,9 +185,15 @@
 
     <script>
       function showGraph(){
-        console.log('clicked');
         const altitude_btn = document.getElementById('altitude-btn');
         const targetElement = document.getElementById('chart1');
+        //altitude_btn.addEventListener('click', function() {
+          targetElement.scrollIntoView({ behavior: 'smooth' }); // Scroll to the target element
+          console.log('scrollllll__________');
+        //});
+        console.log('clicked');
+        
+        
         let value_callsign = altitude_btn.dataset.info;
         let value_time = altitude_btn.value;
         let value_name = altitude_btn.name;
@@ -187,10 +201,7 @@
         console.log('time = '+value_time);
         console.log('callsign = '+value_callsign);
 
-        altitude_btn.addEventListener('click', function() {
-          targetElement.scrollIntoView({ behavior: 'smooth' }); // Scroll to the target element
-          console.log('scrollllll__________');
-        });
+        
 
         fetch(apiUrl+`/grp11/backend/altitudes?username=${username}`, {
             method: 'POST',

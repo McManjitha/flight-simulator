@@ -21,17 +21,17 @@ import Fonts
 basic 
 ---------------------------------------------------------------------*/
 
-body {
+/*body {
      color: #666666;
      font-size: 14px;
      font-family: 'Poppins', sans-serif;
      line-height: 1.80857;
      font-weight: normal;
-     background: url(../images/body_bg.jpg);
-     background-size: 100% 100%;
-     background-position: center;
+     background: url(../images/airplane_wing_sky_111276_1680x1050.jpg);
+     background-size: 100% 50%;
+     background-position: top;
      background-repeat: no-repeat;
-}
+}*/
 
 a {
      color: #1f1f1f;
@@ -122,6 +122,7 @@ p {
      font-weight: 400;
      font-size: 17px;
      line-height: 28px;
+     height: 20%;
 }
 
 a {
@@ -254,7 +255,7 @@ header
 ---------------------------------------------------------------------*/
 
 header {
-     background: #0f132d;
+     background: #020723;
      width: 100%;
      padding: 22px 30px;
      height: 96px;
@@ -282,7 +283,7 @@ ul.social_icon li:last-child {
 }
 
 ul.social_icon li a {
-     color: #fefeff;
+     color: #6c6c6c;
      display: inline-block;
      text-align: center;
      line-height: 33px;
@@ -375,7 +376,9 @@ ul.email li i {
 
 .banner_main {
      padding-bottom: 90px;
-     padding-top: 90px;
+     padding-top: 0px;
+     
+     background-image: url("images/airplane_wing_sky_111276_1680x1050.jpg");
 }
 
 .carousel-indicators {
@@ -384,11 +387,13 @@ ul.email li i {
 
 #myCarousel a.carousel-control-next,
 #myCarousel a.carousel-control-prev {
+     position: absolute;
+     margin-top: 5%;
      background: transparent;
-     width: 72px;
-     height: 72px;
-     top: 107%;
-     opacity: 1;
+     width: 40px;
+     height: 40px;
+     top: 80%;
+     opacity: 0.3;
      font-size: 33px;
      border-radius: 40px;
      border: #9197a6 solid 5px;
@@ -403,12 +408,16 @@ ul.email li i {
      right: 44.3%;
 }
 
+.carousel-inner{
+     height: 500px;
+}
+
 #myCarousel a.carousel-control-next:focus,
 #myCarousel a.carousel-control-next:hover,
 #myCarousel a.carousel-control-prev:focus,
 #myCarousel a.carousel-control-prev:hover {
      color: #fff;
-     opacity: 1;
+     opacity: 0.9;
 }
 
 .relative {
@@ -421,6 +430,7 @@ ul.email li i {
      font-family: 'Open Sans', sans-serif;
      text-align: left;
      max-width: 540px;
+     margin-top: 10%;
 }
 
 .banner_main .bluid h1 {
@@ -440,7 +450,7 @@ ul.email li i {
 }
 
 .banner_main .bluid .read_more {
-     margin-right: 15px;
+     margin-left: 350px;
 }
 
 
@@ -590,7 +600,7 @@ ul.email li i {
 }
 
 .graf_tab li a {
-     color: #fff;
+     color: #888888;
      border: inherit !important;
      border-radius: 0 !important;
      padding: 12px 36px;
@@ -747,7 +757,7 @@ ul.email li i {
 }
 
 .testimonial .carousel-indicators .active {
-     background-color: #effafc;
+     background-color: #7b7b7b;
 }
 
 
@@ -831,20 +841,20 @@ ul.email li i {
 /** footer **/
 
 .footer {
-     padding-top: 90px
+     padding-top: 0px
 }
 
 .logo_bottom {
      font-weight: bold;
      font-size: 51px;
-     color: #fff !important;
+     color: #757474 !important;
      line-height: 55px;
      margin-bottom: 40px;
      display: block;
 }
 
 .Informa h3 {
-     color: #ffffff;
+     color: #7b7b7b;
      font-size: 25px;
      font-weight: bold;
      line-height: 21px;
