@@ -26,44 +26,58 @@ const urlParams = new URLSearchParams(window.location.search);
 const username = urlParams.get('username');
 //const theUrl = 'https://demo.eminenceapps.com';
 const theUrl = '';
+var routingArray = [];
+
+const markedRegionVertices = [
+  { lat: 1.675, lng: 103.66 },/*VJR*/
+  { lat: 2.1633333, lng: 102.641666 }, /*GUPTA*/
+  { lat: 2.80055, lng: 102.671944 } /*SAROX */
+];
+
+
+//Create the marked region polygon
+const markedRegionPolygon = new google.maps.Polygon({
+  paths: markedRegionVertices,
+  strokeColor: '#FF0000', // Border color of the polygon
+  strokeOpacity: 0.8,
+  strokeWeight: 2,
+  fillColor: '#FF0000', // Fill color of the polygon
+  fillOpacity: 0.35,
+});
+
 
 // sends a get request to fetch waypoint data
-function getWaypoints(){
-  const xhr1 = new XMLHttpRequest();
-  //console.log('heeyyy = '+apiUrl);
-  const url = theUrl+'/grp11/backend/wayPoints?username=' + encodeURIComponent(username);
-  xhr1.open('GET', url, true);
-  xhr1.setRequestHeader('Content-Type', 'application/json');
+async function getWaypoints(){
+  return new Promise((resolve, reject) => {
+    const xhr1 = new XMLHttpRequest();
+    //console.log('heeyyy = '+apiUrl);
+    const url = theUrl+'/grp11/backend/wayPoints?username=' + encodeURIComponent(username);
+    xhr1.open('GET', url, true);
+    xhr1.setRequestHeader('Content-Type', 'application/json');
 
-  xhr1.onreadystatechange = function(){
-    if(xhr1.readyState === 4 && xhr1.status === 200){
-      const response = JSON.parse(xhr1.responseText);
-      // Map the objects in the array to a new array of objects with the desired attributes
-      for(let i = 0; i < response.collection1.length; i++){
-        gateWays.push(new WayPoint(response.collection1[i]));
+    xhr1.onreadystatechange = function(){
+      if(xhr1.readyState === 4 && xhr1.status === 200){
+        const response = JSON.parse(xhr1.responseText);
+        // Map the objects in the array to a new array of objects with the desired attributes
+        for(let i = 0; i < response.collection1.length; i++){
+          gateWays.push(new WayPoint(response.collection1[i]));
+        }
+        resolve(gateWays); // Resolve the Promise with the retrieved data
+        displayWaypoints();
+        detectLineCrossing();
+      } else {
+        reject(xhr1.statusText); // Reject the Promise if there's an error
+        console.error(xhr1.statusText);
       }
-    } else {
-      console.error(xhr1.statusText);
     }
-  }
-  xhr1.send();
+    xhr1.send();
+  });
 }
 
 
+
+
 function firstRequest() {
-  // Get the present hour
-  // console.log("Inside firstrequest");
-  // const now = new Date();
-  // const presentHour = now.getHours();
-  // current_hour = presentHour;
-  // console.log("current hour = "+presentHour);
-
-  // // Calculate the next hour
-  // const nextHour = (presentHour + 1) % 24;
-  // console.log("next hour = "+nextHour);
-
-  // // Create the string in the format "A-B"
-  // const data = current_hour + '-' + nextHour;
   const data = createTimeCollection();
 
   // Perform your AJAX request here
@@ -77,8 +91,6 @@ function firstRequest() {
       allFlights = [];
       console.log("response recieved");
       const response = JSON.parse(xhr.responseText);
-      //console.log("response collection");
-      //console.log(response.collection2);
 
       for(let i = 0; i < response.collection2.length; i++){
         allFlights.push(new Flight(response.collection2[i]));
@@ -93,17 +105,10 @@ function firstRequest() {
 
 
 function sendRequest() {
-  // Get the present hour
-  //console.log("Inside sendrequest");
   current_hour++;
- //console.log("current hour = "+current_hour);
-  //console.log("test");
 
   // Calculate the next hour
   const nextHour = (current_hour + 1) % 24;
-  //console.log("Next hour = "+nextHour);
-
-  // Create the string in the format "A-B"
   const data = current_hour + '-' + nextHour;
   current_hour = nextHour;
 
@@ -129,10 +134,10 @@ function sendRequest() {
   xhr.send();
 }
 
-function getAltitudes(){
+function getRouting(){
   return new Promise(function(resolve, reject) {
     const xhr2 = new XMLHttpRequest();
-    const url = theUrl+'/grp11/backend/altitudes?username=' + encodeURIComponent(username); 
+    const url = theUrl+'/grp11/backend/fetchRouting?username=' + encodeURIComponent(username); 
     xhr2.open('GET', url, true);
     xhr2.setRequestHeader('Content-Type', 'application/json');
 
@@ -140,15 +145,11 @@ function getAltitudes(){
       if (xhr2.readyState === 4) {
         if (xhr2.status === 200) {
           if (xhr2.responseText) {
-            const altitudes = JSON.parse(xhr2.responseText);
-            altitudesArr[0] = rearrangeArray(altitudes.TakeOff_levels);
-            altitudesArr[1] = rearrangeArray(altitudes.Cruise_Levels);
-            altitudesArr[2] = rearrangeArray(altitudes.Decent_levels);
+            const routings = JSON.parse(xhr2.responseText);
+            console.log(routings);
 
             // remove the duplicates and create an array with unique altitude values
-            uniqueAltitudes = flattenAndRemoveDuplicates(altitudesArr);
-            //console.log("uniqueAltitudes");
-            //console.log(uniqueAltitudes);
+            //uniqueAltitudes = flattenAndRemoveDuplicates(altitudesArr);
             resolve();
           } else {
             console.error('Empty response');
@@ -196,8 +197,6 @@ function collisionHandling(){
   //console.log('Inside collisionHandling');
   //console.log(compArr);
   for(let j = 0; j < compArr.length; j++){
-    //console.log("Inside for loop");
-    //console.log(compArr[j]);
     while(compArr[j].length > 0){
       let ob1 = compArr[j].shift();
       //console.log(ob1);
@@ -243,15 +242,25 @@ function initMap() {
   });
 }
 
-async function namingflightInfo(){
-  try{
-    await getAltitudes();
-    for(let i = 0; i < uniqueAltitudes.length; i++){
-      flightInfo.push([]);
-      namingObject[uniqueAltitudes[i]] = i;
-    }
-  }catch(error){
-    console.error(error);
+// async function namingflightInfo(){
+//   try{
+//     await getAltitudes();
+//     for(let i = 0; i < uniqueAltitudes.length; i++){
+//       flightInfo.push([]);
+//       namingObject[uniqueAltitudes[i]] = i;
+//     }
+//   }catch(error){
+//     console.error(error);
+//   }
+// }
+
+function displayWaypoints(){
+  for(var gws = 0; gws < gateWays.length; gws++){
+    console.log("Creating waypoints");
+    gateWays[gws].waypointMarker = createMarker(gateWays[gws]);
+    gateWays[gws].waypointMarker.addListener("click", function(){
+      console.log(this.setTitle);
+    })
   }
 }
 
@@ -260,37 +269,18 @@ function main(){
 
   getWaypoints();
   scheduleRequest();
-  //namingflightInfo();
-//  
-
-  // setTimeout(function(){
-  //   let ob1 =
-  //   {
-  //   "Callsign": "TR2466",
-  //   Departure_Time: "15.40.10",
-  //   "Destination Info": "WMKK",
-  //   "Origin Info": "WSSS",
-  //   Routing: "WSSS_WMKK",
-  //   "path": "[WSSS,VTK,VJR,GUPTA,VKL,WMKK]",
-  //   "Altitude": "[7000,41000,41000,41000,41000,7000]",
-  //   "Speed_multiplied":"[1280, 3200, 3200, 3200, 3200, 1240]"
-  //   }
-
-  //   allFlights.push(new Flight(ob1));
-  //   allFlights[0].initializing();
-  // }, 4000)
-  
+  getRouting();
 
   // create gate way markers
-  setTimeout(function() {
-    for(var gws = 0; gws < gateWays.length; gws++){
-      console.log("Creating waypoints");
-      gateWays[gws].waypointMarker = createMarker(gateWays[gws]);
-      gateWays[gws].waypointMarker.addListener("click", function(){
-        console.log(this.setTitle);
-      })
-    }
-  }, 3000)
+  // setTimeout(function() {
+  //   for(var gws = 0; gws < gateWays.length; gws++){
+  //     console.log("Creating waypoints");
+  //     gateWays[gws].waypointMarker = createMarker(gateWays[gws]);
+  //     gateWays[gws].waypointMarker.addListener("click", function(){
+  //       console.log(this.setTitle);
+  //     })
+  //   }
+  // }, 3000)
 
 
   //--------------------------------------------------------------------------------
@@ -314,13 +304,7 @@ function main(){
         }
       }
 
-    }
-    //console.log("allFlights = ");
-    //console.log(allFlights);
-
-    //console.log("flightInfo = ");
-    //console.log(flightInfo);
-    
+    } 
 
   }, 7000);
 
@@ -397,9 +381,7 @@ function main(){
                 if(flightInfo[j][k].initLat > flightInfo[j][k].nextLat){
                   // Going down the map.
                   if( flightInfo[j][k].marker.getPosition().lat() < flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
-                    //console.log('Waypoint reached');
                     if(flightInfo[j][k].waypointChanging_down(j, k, username) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){
-                      //console.log('changing altitude')
                       let arrayName = flightInfo[j][k].currentAltitude;
                       let removedFlight = flightInfo[j].splice(k, 1)[0];
                       //console.log('flight removed')
@@ -411,9 +393,6 @@ function main(){
                   //going up the map
                 }else if(flightInfo[j][k].initLat <   flightInfo[j][k].nextLat){
                   if( flightInfo[j][k].marker.getPosition().lat() > flightInfo[j][k].nextLat && flightInfo[j][k].count < flightInfo[j][k].route.length){
-                    //console.log('Waypoint reached');
-                    // Here, the plane reaches a destination gateway. Then it assign coordinates of the 
-                    // previous journey end gateway to initial gateway coordiates of the next journey
                     if(flightInfo[j][k].waypointChanging_up(j, k, username) && (flightInfo[j][k].previousAltitude != flightInfo[j][k].currentAltitude)){
 
                       let arrayName = flightInfo[j][k].currentAltitude;

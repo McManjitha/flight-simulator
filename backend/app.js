@@ -15,7 +15,7 @@ const json2csv = require('json2csv').parse;
 const csvParser = require('csv-parser');
 const multer = require('multer')
 const cookieParser = require('cookie-parser');
-const {User, Users, PlaneModel, AltitudeCollection,WaypointCollection, LandedFlightModel } = require("./models");
+const {User, Users, PlaneModel, RoutingTable, WaypointCollection, LandedFlightModel } = require("./models");
 
 let count = 0;
 const theUrl = '';
@@ -253,12 +253,12 @@ app.post('/grp11/backend/upload', upload.array('file', 4), async (req, res) => {
   });
 
   const collectionName = 'WayPoints_100'; // Specify the collection name
-const collectionW = connectionUser.model(collectionName, WaypointCollection.schema);
+  const collectionW = connectionUser.model(collectionName, WaypointCollection.schema);
 
 // Delete all documents in the collection
 collectionW.deleteMany({})
   .then(() => {
-    // Read and upload new data
+    // Read and upload new data------------------------------------------------------------------------------
     fs.createReadStream(files[1].path)
       .pipe(csvParser())
       .on('data', (data) => {
@@ -275,22 +275,22 @@ collectionW.deleteMany({})
   .catch((error) => {
     console.error('Error deleting documents:', error);
   });
-
-  const collectionA = connectionUser.model('AltitudeCollection', AltitudeCollection.schema);
+//------------------------------------------------------------------------------------------------------------------
+  const collectionR = connectionUser.model('RoutingTable', RoutingTable.schema);
 
 // Delete all documents in the collection
-collectionA.deleteMany({})
+collectionR.deleteMany({})
   .then(() => {
     // Read and upload new data
     fs.createReadStream(files[2].path)
       .pipe(csvParser({ separator: ';' }))
       .on('data', (data) => {
         // Create a new document for the corresponding collection
-        const document = new collectionA(data);
+        const document = new collectionR(data);
         document.save();
       })
       .on('end', () => {
-        console.log(`Data from ${files[2].filename} saved to AltitudeCollection`);
+        console.log(`Data from ${files[2].filename} saved to RoutingTable`);
         // Remove the temporary CSV file
         fs.unlinkSync(files[2].path);
       });
@@ -298,76 +298,76 @@ collectionA.deleteMany({})
   .catch((error) => {
     console.error('Error deleting documents:', error);
   });
-
+//-----------------------------------------------------------------------------------------------------------------------
   const collectionNames = ['5-6', '6-7']; // Define the collection names
-const collections = {};
+  const collections = {};
 
-// Delete data from each collection
-async function deleteDataFromCollections() {
-  for (const name of collectionNames) {
-    const CollectionModel = collections[name];
-    await CollectionModel.deleteMany({})
-      .then(() => {
-        console.log(`Data deleted from ${name}`);
-      })
-      .catch((error) => {
-        console.error(`Error deleting data from ${name}:`, error);
-      });
-  }
-}
-
-// Create collection models
-collectionNames.forEach((name) => {
-  collections[name] = connectionUser.model(name, PlaneModel.schema);
-});
-
-// Delete data from collections
-deleteDataFromCollections()
-  .then(() => {
-    // Read and upload new data
-    fs.createReadStream(files[0].path)
-      .pipe(csvParser({ separator: ';' }))
-      .on('data', async (row) => {
-            //console.log(row);
-        const departureTime = row.Departure_Time; // Extract Departure_Time value
-        const hour = parseInt(departureTime.split('.')[0]); // Extract hour from Departure_Time
-
-        const collectionName = `${hour}-${hour + 1}`; // Determine the appropriate collection name
-        const CollectionModel = collections[collectionName]; // Get the corresponding collection model
-
-        // Create a new document and save it to the respective collection
-        const document = new CollectionModel({
-          Callsign : row.Callsign,
-          Origin_Info : row.Origin_Info,
-          Destination_Info : row.Destination_Info,
-          path : row.path,
-          Routing : row.Routing,
-          Departure_Time : row.Departure_Time,
-          Aircraft_Type : row.Aircraft_Type,
-          Altitude : row.Altitude,
-          landed_time : row.landed_time,
-          Speed_multiplied : row.Speed_multiplied
+  // Delete data from each collection
+  async function deleteDataFromCollections() {
+    for (const name of collectionNames) {
+      const CollectionModel = collections[name];
+      await CollectionModel.deleteMany({})
+        .then(() => {
+          console.log(`Data deleted from ${name}`);
+        })
+        .catch((error) => {
+          console.error(`Error deleting data from ${name}:`, error);
         });
-        //console.log(document);
-        await document.save()
-          .then(() => {
-            //console.log(`Document saved to ${collectionName}`);
-          })
-          .catch((error) => {
-            console.error(`Error saving document to ${collectionName}:`, error);
-          });
-      })
-      .on('end', () => {
-        console.log('Data processing complete');
-      });
-  })
-  .catch((error) => {
-    console.error('Error deleting data from collections:', error);
+    }
+  }
+
+  // Create collection models
+  collectionNames.forEach((name) => {
+    collections[name] = connectionUser.model(name, PlaneModel.schema);
   });
-  res.setHeader('Content-Type', 'application/json');
-  res.json({ success: true, message: `${username}` });
-  //res.redirect('/googlemap');
-});
+
+  // Delete data from collections
+  deleteDataFromCollections()
+    .then(() => {
+      // Read and upload new data
+      fs.createReadStream(files[0].path)
+        .pipe(csvParser({ separator: ';' }))
+        .on('data', async (row) => {
+              //console.log(row);
+          const departureTime = row.Departure_Time; // Extract Departure_Time value
+          const hour = parseInt(departureTime.split('.')[0]); // Extract hour from Departure_Time
+
+          const collectionName = `${hour}-${hour + 1}`; // Determine the appropriate collection name
+          const CollectionModel = collections[collectionName]; // Get the corresponding collection model
+
+          // Create a new document and save it to the respective collection
+          const document = new CollectionModel({
+            Callsign : row.Callsign,
+            Origin_Info : row.Origin_Info,
+            Destination_Info : row.Destination_Info,
+            path : row.path,
+            Routing : row.Routing,
+            Departure_Time : row.Departure_Time,
+            Aircraft_Type : row.Aircraft_Type,
+            Altitude : row.Altitude,
+            landed_time : row.landed_time,
+            Speed_multiplied : row.Speed_multiplied
+          });
+          //console.log(document);
+          await document.save()
+            .then(() => {
+              //console.log(`Document saved to ${collectionName}`);
+            })
+            .catch((error) => {
+              console.error(`Error saving document to ${collectionName}:`, error);
+            });
+        })
+        .on('end', () => {
+          console.log('Data processing complete');
+        });
+    })
+    .catch((error) => {
+      console.error('Error deleting data from collections:', error);
+    });
+    res.setHeader('Content-Type', 'application/json');
+    res.json({ success: true, message: `${username}` });
+    //res.redirect('/googlemap');
+  });
 
 // app.get('/themap', (req, res) => {
 //   const username = req.query.username;
@@ -397,54 +397,27 @@ app.get('/grp11/backend/wayPoints', async (req, res) => {
   });
 });
 
-app.post('/grp11/backend/altitudes', async (req, res) => {
-  console.log('Request received');
+app.get('/grp11/backend/fetchRouting', async (req, res) => {
   
-  try {
-    const connectionUser = await mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+  const connectionUser = await mongoose.createConnection(`mongodb+srv://manjitha:P8PFFv7thmzzNAQE@cluster0.8wcby6i.mongodb.net/${req.query.username}?retryWrites=true&w=majority`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
+
+  connectionUser.on('connected', () => {
+    const collectionR = connectionUser.model('routingtables', RoutingTable.schema);
+    Promise.all([collectionR.find().exec()])
+    .then((doc1) => {
+      const waypointPairArray = createUniqueWaypointPairs(doc1[0]);
+      //console.log(waypointPairArray)
+      const data = {collection1: waypointPairArray};
+      // sending the waypoints data
+      res.send(data);
+    }).catch((err) => {
+      console.error(err);
     });
-
-    const query = {
-      Departure_Time: req.body.value_time,
-      //Callsign : req.body.value_callsign
-    };
-    console.log(query);
-    console.log('collection = '+req.body.value_name);
-
-    connectionUser.on('connected', () => {
-      const collectionP = connectionUser.model(req.body.value_name, PlaneModel.schema);
-
-      collectionP.findOne(query).exec()
-      .then((doc) => {
-        if (doc) {
-          console.log('Found document:');
-          //const grphData = processStrings(doc.Altitude, doc.path);
-          //res.send(grphData);
-          console.log()
-          const grphData = { altitudes: removeBrackets(doc.Altitude), waypoints: removeBrackets(doc.path), speeds: removeBrackets(doc.Speed_multiplied) };
-          res.send(grphData);
-        } else {
-          console.log('Document not found');
-          res.status(404).send('Document not found');
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        res.status(500).send('Error retrieving data');
-      });
-    });
-
-    connectionUser.on('error', (err) => {
-      console.error('MongoDB connection error:', err);
-      res.status(500).send('Error connecting to database');
-    });
-  } catch (err) {
-    console.error('Connection error:', err);
-    res.status(500).send('Error connecting to database');
-  }
-});
+  });
+})
 
 // handling the request for the flight data
 app.get('/grp11/backend/data', async (req, res) => {
@@ -536,6 +509,23 @@ function removeBrackets(inputString) {
   return inputString;
 }
 
+function createUniqueWaypointPairs(data) {
+  const pairsSet = new Set();
+
+  data.forEach(document => {
+    const waypointPath = document.Routing;
+    const waypoints = waypointPath.split(' ');
+
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const pair = [waypoints[i], waypoints[i + 1]];
+      const sortedPair = pair.slice().sort(); // Sort the pair to make order irrelevant
+      pairsSet.add(JSON.stringify(sortedPair));
+    }
+  });
+
+  const uniquePairs = Array.from(pairsSet).map(pair => JSON.parse(pair));
+  return uniquePairs;
+}
 
 
 

@@ -113,13 +113,23 @@ const landedFlightsSchema = new mongoose.Schema({
     }
 });
 
+const RoutingSchema = new mongoose.Schema({
+  Name : {
+    type : String
+  },
+  Routing : {
+    type : String
+  }
+})
+
 const User = mongoose.model("User", LogInSchema);
 const Users = mongoose.model("Users", Userschema, 'logincollections');
 const PlaneModel = mongoose.model("PlaneCollection", PlaneSchema);
 //const RouteCollection = mongoose.model("RouteCollection", RouteSchema);
 const WaypointCollection = mongoose.model("WaypointCollection",WayPointSchema);
 const AltitudeCollection = mongoose.model("AltitudeCollection", altitudeSchema);
-const LandedFlightModel = mongoose.model("landed_flights", landedFlightsSchema)
+const LandedFlightModel = mongoose.model("landed_flights", landedFlightsSchema);
+const RoutingTable = mongoose.model('RoutingTable', RoutingSchema);
 
 module.exports = {
   User,
@@ -128,7 +138,8 @@ module.exports = {
   //RouteCollection,
   WaypointCollection,
   AltitudeCollection,
-  LandedFlightModel
+  LandedFlightModel,
+  RoutingTable
 };
 
 

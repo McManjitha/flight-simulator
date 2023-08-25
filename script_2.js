@@ -1,6 +1,3 @@
-//send a get request to fetch the flight data at each hour
-
-
 
 
 
@@ -64,8 +61,6 @@ function blinkCircle(latitude, longitude) {
   circles.push(circle);
   blinkTimers.push(blinkTimer);
 }
-
-
 
 
 // calculate the gradient of the straight line path
@@ -148,13 +143,11 @@ function initalString_2(initLat, initLng, nextLat, nextLng){
 }
 
 function rearrangeArray(inputString) {
-  // remove initial '[' and final ']' characters
   inputString = inputString.slice(1, -1);
   // split the input string by commas
   const elements = inputString.split(",");
   // create a new array of strings
   const outputArray = elements.map((element) => {
-    // remove any leading or trailing whitespace and spaces
     element = element.trim().replace(/^\s+|\s+$/g, '');
     // return the element as a string
     return String(element);
@@ -197,10 +190,7 @@ function compareTime(inputTime, name) {
 }
 
 function flattenAndRemoveDuplicates(array2D) {
-  // Flatten the 2D array
   const flattenedArray = array2D.flat();
-
-  // Create a Set to store non-duplicated values
   const uniqueValues = new Set();
 
   // Create an array to store the final result
@@ -306,5 +296,34 @@ function getHourRange(timeStr) {
   }
 
   return `${hourRangeStart}-${hourRangeEnd}`;
+}
+
+
+function detectLineCrossing(){
+  const pathWaypointSequence = ['WSSS','VTK','PADLI','ISTAN','VKL','WMKK'];
+  const pathWaypoints = pathWaypointSequence.map(waypointName => {
+    return gateWays.find(waypoint => waypoint.label === waypointName);
+  });
+  console.log(pathWaypoints)
+    //Create the marked region polygon
+  const markedRegionPolygon = new google.maps.Polygon({
+    paths: markedRegionVertices.map(vertex => ({ lat: vertex.lat, lng: vertex.lng })),
+    strokeColor: '#FF0000', // Border color of the polygon
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: '#FF0000', // Fill color of the polygon
+    fillOpacity: 0.35,
+  });
+  markedRegionPolygon.setMap(map);
+  //const intersectsMarkedRegion = doesPathIntersectMarkedRegion(pathWaypoints, markedRegionPolygon);
+
+  // if (intersectsMarkedRegion) {
+  //   // Reroute flight to avoid the marked region
+  //   // Implement your rerouting logic here
+  //   console.log("Interrrrrrsected!!!!!!!!!!!!");
+  // } else { 
+  //     // Flight path does not intersect the marked region, proceed as planned
+  //     console.log("Not Intersected");
+  // }
 }
 
