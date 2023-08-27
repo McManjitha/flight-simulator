@@ -299,7 +299,7 @@ collectionR.deleteMany({})
     console.error('Error deleting documents:', error);
   });
 //-----------------------------------------------------------------------------------------------------------------------
-  const collectionNames = ['5-6', '6-7']; // Define the collection names
+  const collectionNames = ['5-6', '6-7', '7-8']; // Define the collection names
   const collections = {};
 
   // Delete data from each collection
@@ -333,6 +333,7 @@ collectionR.deleteMany({})
           const hour = parseInt(departureTime.split('.')[0]); // Extract hour from Departure_Time
 
           const collectionName = `${hour}-${hour + 1}`; // Determine the appropriate collection name
+          console.log(collectionName)
           const CollectionModel = collections[collectionName]; // Get the corresponding collection model
 
           // Create a new document and save it to the respective collection

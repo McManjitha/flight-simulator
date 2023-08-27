@@ -31,8 +31,8 @@ function generateTimeIntervals(startTime, endTime, intervalSeconds) {
 
 // Start and end time in HH.MM.SS format
 const startTime = '05.00.00';
-const endTime = '24.00.00';
-const intervalSeconds = 10;
+const endTime = '07.00.00';
+const intervalSeconds = 20;
 
 const timeIntervals = generateTimeIntervals(startTime, endTime, intervalSeconds);
 

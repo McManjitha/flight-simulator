@@ -43,7 +43,7 @@ function blinkCircle(latitude, longitude) {
     }
     blinkCount++;
 
-    if (blinkCount > 10) {
+    if (blinkCount > 5) {
       clearInterval(blinkTimer);
       // Remove the circle from the map
       circle.setMap(null);
@@ -181,7 +181,7 @@ function compareTime(inputTime, name) {
     (inputHours === localHours && inputMinutes > localMinutes) ||
     (inputHours === localHours && inputMinutes === localMinutes && inputSeconds > localSeconds)) {
     return false; //inputTime is greater than current local time
-  } else if((inputHours === localHours && inputMinutes === localMinutes && inputSeconds > (localSeconds-8)) ||
+  } else if((inputHours === localHours && inputMinutes === localMinutes && inputSeconds > (localSeconds-6)) ||
             (inputHours === localHours && inputMinutes === localMinutes && inputSeconds === localSeconds)) {
 
             //(inputHours === localHours && inputMinutes >= numMins)) {
@@ -299,31 +299,84 @@ function getHourRange(timeStr) {
 }
 
 
-function detectLineCrossing(){
-  const pathWaypointSequence = ['WSSS','VTK','PADLI','ISTAN','VKL','WMKK'];
+function detectLineCrossing(pathWaypointSequence, markedRegionPolygon){
+  console.log('inside detectLineCrossing')
+  //console.log(pathWaypointSequence)
+  //const pathWaypointSequence = ['WSSS','VTK','PADLI','ISTAN','VKL','WMKK'];
+  //console.log('pathwaypoint sequence ' +pathWaypointSequence)
   const pathWaypoints = pathWaypointSequence.map(waypointName => {
     return gateWays.find(waypoint => waypoint.label === waypointName);
   });
-  console.log(pathWaypoints)
+  
+  //console.log(pathWaypoints)
+  //console.log(pathWaypoints)
     //Create the marked region polygon
-  const markedRegionPolygon = new google.maps.Polygon({
-    paths: markedRegionVertices.map(vertex => ({ lat: vertex.lat, lng: vertex.lng })),
-    strokeColor: '#FF0000', // Border color of the polygon
-    strokeOpacity: 0.8,
-    strokeWeight: 2,
-    fillColor: '#FF0000', // Fill color of the polygon
-    fillOpacity: 0.35,
-  });
-  markedRegionPolygon.setMap(map);
-  //const intersectsMarkedRegion = doesPathIntersectMarkedRegion(pathWaypoints, markedRegionPolygon);
+  // const markedRegionPolygon = new google.maps.Polygon({
+  //   paths: markedRegionVertices.map(vertex => ({ lat: vertex.lat, lng: vertex.lng })),
+  //   strokeColor: '#FF0000', // Border color of the polygon
+  //   strokeOpacity: 0.8,
+  //   strokeWeight: 2,
+  //   fillColor: '#FF0000', // Fill color of the polygon
+  //   fillOpacity: 0.35,
+  // });
+  // markedRegionPolygon.setMap(map);
+  const intersectsMarkedRegion = doesPathIntersectMarkedRegion(pathWaypoints, markedRegionPolygon);
 
-  // if (intersectsMarkedRegion) {
-  //   // Reroute flight to avoid the marked region
-  //   // Implement your rerouting logic here
-  //   console.log("Interrrrrrsected!!!!!!!!!!!!");
-  // } else { 
-  //     // Flight path does not intersect the marked region, proceed as planned
-  //     console.log("Not Intersected");
-  // }
+  if (intersectsMarkedRegion) {
+    //console.log(pathWaypointSequence)
+    return true;
+    //console.log("Interrrrrrsected!!!!!!!!!!!!");
+  } else { 
+      // Flight path does not intersect the marked region, proceed as planned
+    return false;
+  }
 }
+
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const earthRadius = 6371000; // Earth's approximate radius in meters (WGS84 ellipsoid)
+
+  // Convert degrees to radians
+  const lat1Rad = toRadians(lat1);
+  const lon1Rad = toRadians(lon1);
+  const lat2Rad = toRadians(lat2);
+  const lon2Rad = toRadians(lon2);
+
+  // Calculate the differences between the latitudes and longitudes
+  const dLat = lat2Rad - lat1Rad;
+  const dLon = lon2Rad - lon1Rad;
+
+  // Calculate the square of half the chord length between the points
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+  // Calculate the angular distance in radians
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  // Calculate the distance using the Earth's radius
+  const distance = earthRadius * c;
+
+  return distance;
+}
+
+function doesPathIntersectMarkedRegion(pathWaypoints, markedRegionPolygon) {
+  for (let i = 0; i < pathWaypoints.length - 1; i++) {
+  
+    const startPoint = new google.maps.LatLng(pathWaypoints[i].lat, pathWaypoints[i].lng);
+    const endPoint = new google.maps.LatLng(pathWaypoints[i + 1].lat, pathWaypoints[i + 1].lng);
+    
+
+    if (
+      google.maps.geometry.poly.containsLocation(startPoint, markedRegionPolygon) ||
+      google.maps.geometry.poly.containsLocation(endPoint, markedRegionPolygon)
+    ) {
+      return true; // Flight path intersects the marked region
+    }
+  }
+
+  return false; // Flight path does not intersect the marked region
+}
+
+
+
 
