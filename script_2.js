@@ -300,34 +300,19 @@ function getHourRange(timeStr) {
 
 
 function detectLineCrossing(pathWaypointSequence, markedRegionPolygon){
-  console.log('inside detectLineCrossing')
-  //console.log(pathWaypointSequence)
-  //const pathWaypointSequence = ['WSSS','VTK','PADLI','ISTAN','VKL','WMKK'];
-  //console.log('pathwaypoint sequence ' +pathWaypointSequence)
+  //console.log('inside detectLineCrossing')
+
   const pathWaypoints = pathWaypointSequence.map(waypointName => {
     return gateWays.find(waypoint => waypoint.label === waypointName);
   });
   
-  //console.log(pathWaypoints)
-  //console.log(pathWaypoints)
-    //Create the marked region polygon
-  // const markedRegionPolygon = new google.maps.Polygon({
-  //   paths: markedRegionVertices.map(vertex => ({ lat: vertex.lat, lng: vertex.lng })),
-  //   strokeColor: '#FF0000', // Border color of the polygon
-  //   strokeOpacity: 0.8,
-  //   strokeWeight: 2,
-  //   fillColor: '#FF0000', // Fill color of the polygon
-  //   fillOpacity: 0.35,
-  // });
-  // markedRegionPolygon.setMap(map);
   const intersectsMarkedRegion = doesPathIntersectMarkedRegion(pathWaypoints, markedRegionPolygon);
 
   if (intersectsMarkedRegion) {
-    //console.log(pathWaypointSequence)
+    //console.log('intersected____')
     return true;
-    //console.log("Interrrrrrsected!!!!!!!!!!!!");
   } else { 
-      // Flight path does not intersect the marked region, proceed as planned
+    //console.log('Not intersected .....')
     return false;
   }
 }
@@ -359,23 +344,143 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
   return distance;
 }
 
-function doesPathIntersectMarkedRegion(pathWaypoints, markedRegionPolygon) {
-  for (let i = 0; i < pathWaypoints.length - 1; i++) {
+// function doesPathIntersectMarkedRegion(pathWaypoints, markedRegionPolygon) {
+//   for (let i = 0; i < pathWaypoints.length - 1; i++) {
   
-    const startPoint = new google.maps.LatLng(pathWaypoints[i].lat, pathWaypoints[i].lng);
-    const endPoint = new google.maps.LatLng(pathWaypoints[i + 1].lat, pathWaypoints[i + 1].lng);
+//     const startPoint = new google.maps.LatLng(pathWaypoints[i].lat, pathWaypoints[i].lng);
+//     const endPoint = new google.maps.LatLng(pathWaypoints[i + 1].lat, pathWaypoints[i + 1].lng);
     
 
-    if (
-      google.maps.geometry.poly.containsLocation(startPoint, markedRegionPolygon) ||
-      google.maps.geometry.poly.containsLocation(endPoint, markedRegionPolygon)
-    ) {
-      return true; // Flight path intersects the marked region
+//     if (
+//       google.maps.geometry.poly.containsLocation(startPoint, markedRegionPolygon) ||
+//       google.maps.geometry.poly.containsLocation(endPoint, markedRegionPolygon)
+//     ) {
+//       return true; // Flight path intersects the marked region
+//     }
+//   }
+
+//   return false; // Flight path does not intersect the marked region
+// }
+
+function generateAltitudes(waypointCount) {
+  const validFirstLastValues = ['7000', '12000'];
+  const validMiddleValues = ['33000', '31000', '36000', '38000', '41000'];
+
+  if (waypointCount === 2) {
+    return [validFirstLastValues[0], validFirstLastValues[1]];
+  }
+
+  const waypoints = [];
+
+  for (let i = 0; i < waypointCount; i++) {
+    if (i === 0 || i === waypointCount - 1) {
+      waypoints.push(validFirstLastValues[Math.floor(Math.random() * validFirstLastValues.length)]);
+    } else {
+      waypoints.push(validMiddleValues[Math.floor(Math.random() * validMiddleValues.length)]);
+    }
+  }
+
+  return waypoints;
+}
+
+function generateSpeeds(waypointCount) {
+  const validFirstLastValues = ['8240', '9280', '8160'];
+  const validMiddleValues = ['8000', '8600', '8920', '8800', '8200'];
+
+  if (waypointCount === 2) {
+    return [validFirstLastValues[0], validFirstLastValues[1]];
+  }
+
+  const waypoints = [];
+
+  for (let i = 0; i < waypointCount; i++) {
+    if (i === 0 || i === waypointCount - 1) {
+      waypoints.push(validFirstLastValues[Math.floor(Math.random() * validFirstLastValues.length)]);
+    } else {
+      waypoints.push(validMiddleValues[Math.floor(Math.random() * validMiddleValues.length)]);
+    }
+  }
+
+  return waypoints;
+}
+
+function doesPathIntersectMarkedRegion(pathWaypoints, markedRegionPolygon) {
+  for (let i = 0; i < pathWaypoints.length - 1; i++) {
+    const startPoint = pathWaypoints[i];
+    const endPoint = pathWaypoints[i + 1];
+
+    // Get the vertices of the marked region polygon
+    const markedRegionVertices = markedRegionPolygon.getPath().getArray();
+    //console.log(markedRegionVertices)
+    for (let j = 0; j < markedRegionVertices.length; j++) {
+    
+      const vertex1 = markedRegionVertices[j];
+      const vertex2 = markedRegionVertices[(j + 1) % markedRegionVertices.length];
+
+      // Calculate the slope and y-intercept of the flight path segment
+      const m1 = (endPoint.lat - startPoint.lat) / (endPoint.lng - startPoint.lng);
+      const c1 = startPoint.lat - m1 * startPoint.lng;
+
+      // Calculate the slope and y-intercept of the marked region edge
+      const m2 = (vertex2.lat() - vertex1.lat()) / (vertex2.lng() - vertex1.lng());
+      const c2 = vertex1.lat() - m2 * vertex1.lng();
+
+      // Calculate the latitude (y-coordinate) of intersection
+      const intersection_lat = (c2 - c1) / (m1 - m2);
+
+      // Check if the intersection_lat is within bounds
+      if (
+        intersection_lat >= Math.min(startPoint.lng, endPoint.lng) &&
+        intersection_lat <= Math.max(startPoint.lng, endPoint.lng) &&
+        intersection_lat >= Math.min(vertex1.lng(), vertex2.lng()) &&
+        intersection_lat <= Math.max(vertex1.lng(), vertex2.lng())
+      ) {
+        return true; // Flight path intersects the marked region
+      }
     }
   }
 
   return false; // Flight path does not intersect the marked region
 }
+
+
+
+
+// function rayCrossesSegment(point, p1, p2) {
+//   const x = point.lng();
+//   const y = point.lat();
+
+//   const x1 = p1.lng();
+//   const y1 = p1.lat();
+//   const x2 = p2.lng();
+//   const y2 = p2.lat();
+
+//   return ((y1 > y) !== (y2 > y)) && (x < ((x2 - x1) * (y - y1)) / (y2 - y1) + x1);
+// }
+
+// function doesPathIntersectMarkedRegion(pathWaypoints, markedRegionPolygon) {
+//   for (let i = 0; i < pathWaypoints.length - 1; i++) {
+//     const startPoint = new google.maps.LatLng(pathWaypoints[i].lat, pathWaypoints[i].lng);
+//     const endPoint = new google.maps.LatLng(pathWaypoints[i + 1].lat, pathWaypoints[i + 1].lng);
+
+//     let isIntersecting = false;
+//     for (let j = 0; j < markedRegionPolygon.getPath().getLength(); j++) {
+//       const vertex1 = markedRegionPolygon.getPath().getAt(j);
+//       const vertex2 = markedRegionPolygon.getPath().getAt((j + 1) % markedRegionPolygon.getPath().getLength());
+
+//       if (rayCrossesSegment(startPoint, vertex1, vertex2) || rayCrossesSegment(endPoint, vertex1, vertex2)) {
+//         isIntersecting = true;
+//         break;
+//       }
+//     }
+
+//     if (isIntersecting) {
+//       return true; // Flight path intersects the marked region
+//     }
+//   }
+
+//   return false; // Flight path does not intersect the marked region
+// }
 
 
 

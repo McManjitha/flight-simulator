@@ -1,9 +1,11 @@
 class Graph {
     constructor() {
         this.nodes = new Map();
+        this.nodeCount = 0;
     }
 
     addNode(nodeName) {
+        this.nodeCount++;
         if (!this.nodes.has(nodeName)) {
             this.nodes.set(nodeName, []);
         }
@@ -26,7 +28,8 @@ class Graph {
     }
 
     // Dijkstra's algorithm to find the shortest path
-    findShortestPath(startNode, endNode, excludedNodes = ['SAROX', 'GUPTA', 'VJR']) {
+    findShortestPath(startNode, endNode, excludedNodes = ['VJR', 'GUPTA', 'SAROX']) {
+        //console.log(' endNode = '+endNode)
         const distances = new Map();
         const previousNodes = new Map();
         const queue = [];
@@ -37,7 +40,6 @@ class Graph {
             previousNodes.set(nodeName, null);
             queue.push(nodeName);
         });
-
         distances.set(startNode, 0);
 
         while (queue.length > 0) {
@@ -45,6 +47,7 @@ class Graph {
             const closestNode = queue.reduce((minNode, node) =>
                 distances.get(node) < distances.get(minNode) ? node : minNode
             );
+            //console.log(closestNode);
 
             // Remove the closest node from the queue
             queue.splice(queue.indexOf(closestNode), 1);
@@ -62,7 +65,7 @@ class Graph {
             // Update distances to neighbors
             const neighbors = this.getNeighbors(closestNode);
             for (const neighbor of neighbors) {
-                const distance = distances.get(closestNode) + neighbor.weight;
+                const distance = distances.get(closestNode) + neighbor.distance;
                 if (distance < distances.get(neighbor.node)) {
                     distances.set(neighbor.node, distance);
                     previousNodes.set(neighbor.node, closestNode);
@@ -70,15 +73,39 @@ class Graph {
             }
         }
 
-        // Build the shortest path
-        const path = [];
+        //Build the shortest path
+        var path = [];
         let currentNode = endNode;
-        while (currentNode !== null) {
+        let i = 0;
+        while (currentNode !== startNode) {
+            i++;
+            //console.log('hi')
             path.unshift(currentNode);
             currentNode = previousNodes.get(currentNode);
+            if(i > this.nodeCount){
+                console.log('no path')
+                return null;
+            }
         }
-
+        path.unshift(startNode);
         return path;
+    }
+
+    findValidShortestPath(startNode, endNode, excludedNodes = ['VJR', 'GUPTA', 'SAROX']) {
+        let shortestPath = this.findShortestPath(startNode, endNode);
+        //console.log('shortestPath = '+shortestPath)
+
+        while ((shortestPath != null) && detectLineCrossing(shortestPath, markedRegionPolygon)) {
+            //console.log('detected crossing')
+            excludedNodes.push(shortestPath[1]); // Exclude the second waypoint of the previous path
+            if(shortestPath.length == 2 || shortestPath.length < 2){
+                return null;
+            }
+            shortestPath = this.findShortestPath(startNode, endNode, excludedNodes);
+            //console.log('shortestPath = '+shortestPath)
+
+        }
+        return shortestPath;
     }
 }
 
@@ -101,3 +128,4 @@ function createGraph(waypointArray, gateways) {
     console.log('Graph created');
     return graph;
 }
+

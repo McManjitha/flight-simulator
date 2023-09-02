@@ -42,8 +42,6 @@ var Planecount = 0;
 //   fillOpacity: 0.35,
 // });
 
-
-
 // sends a get request to fetch waypoint data
 async function getWaypoints(){
   return new Promise((resolve, reject) => {
@@ -86,17 +84,31 @@ function firstRequest() {
 
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4 && xhr.status === 200) {
-      fetchedFlights = [];
       console.log("response recieved");
       const response = JSON.parse(xhr.responseText);
       console.log('length = '+response.collection2.length)
+
       for(let i = 0; i < response.collection2.length; i++){
-        const ob1 = new Flight(response.collection2[i]);
+        const ob1 = new Flight(response.collection2[i]);   
         ob1.initializing();
-        //allFlights.push(ob1);
+
+        // checking whether the flight path intersects the restricted area
         if(detectLineCrossing(ob1.route, markedRegionPolygon)){
-          fetchedFlights.push(ob1);
+          // calculate the new route
+          const newPath = waypointGraph.findValidShortestPath(ob1.route[0], ob1.route[ob1.route.length-1]);
+          if(newPath === null){
+            console.log('No optional path')
+            continue;
+          }
+          //console.log(newPath);
+          ob1.route = newPath;
+          ob1.altitude = generateAltitudes(newPath.length);
+          ob1.speeds = generateSpeeds(newPath.length)
+          allFlights.push(ob1);
+          //console.log(ob2)
+        
         }else{
+
           allFlights.push(ob1);
         }
       }
@@ -130,9 +142,16 @@ function sendRequest() {
       console.log("response recieved");
       const response = JSON.parse(xhr.responseText);
       for(let i = 0; i < response.collection2.length; i++){
-        allFlights.push(new Flight(response.collection2[i]));
-        allFlights[i].initializing();
+        const ob1 = new Flight(response.collection2[i]);
+        ob1.initializing();
+        if(detectLineCrossing(ob1.route, markedRegionPolygon)){
+          fetchedFlights.push(ob1);
+        }else{
+          allFlights.push(ob1);
+        }
       }
+      console.log('finsihed detecting')
+      insertToFlightInfo();
     } else {
       console.error(xhr.statusText);
     }
@@ -154,7 +173,8 @@ function getRouting(){
             const routings = JSON.parse(xhr2.responseText);
             resolve();
             waypointGraph = createGraph(routings.collection1, gateWays);
-            //console.log(waypointGraph.getNeighbors('VBU'));
+            //insertValue()
+            scheduleRequest();
           } else {
             console.error('Empty response');
             alert("Please refresh the page");
@@ -179,25 +199,6 @@ function handleAltitudeLevels(flight, altitude){
   }
 }
 
-// function detectReroutingFlights(){
-//   console.log('inside detectRoutingFLights')
-//   for (var i = fetchedFlights.length - 1; i >= 0; i--) {
-//     var newFlight = fetchedFlights[i];
-//     if (detectLineCrossing(newFlight.route, markedRegionPolygon)) {
-//       console.log('Intersected');
-//       rerouteNeededFlights.push(newFlight);
-//       fetchedFlights.splice(i, 1);
-//       i--;
-//     } else {
-//       allFlights.push(newFlight);
-//       console.log('allFlights')
-//       console.log(allFlights)
-//       fetchedFlights.splice(i, 1); // Remove the intersected flight from fetchedFlights
-//       i--; // Decrement index to account for removed element
-//     }
-//   }
-//   console.log('finished')
-// }
 
 
 //initializing the ajax request every hour and 
@@ -208,16 +209,10 @@ function scheduleRequest() {
   const delay = nextHour - now;
   console.log("Delay = "+(delay/1000)+" s");
   firstRequest();
-  //console.log(fetchedFlights)
-  
   setTimeout(() => {
-    ///console.log("fetching time reached");
     sendRequest();
-    //detectReroutingFlights();
-
     setInterval(function() {
       sendRequest();
-      //detectReroutingFlights();
       
     }, 3600000); // Repeat every hour (in milliseconds)
   }, delay);
@@ -301,7 +296,6 @@ function insertToFlightInfo(){
     for(let m = 0; m < allFlights.length; m++){
       //if(1){
       if(compareTime(allFlights[m].departure_time, allFlights[m].callsign)){ 
-        Planecount++;
         if((allFlights.length > 0) && (allFlights[m].currentAltitude in namingObject)){
           allFlights[m].landed = true;
           flightInfo[namingObject[allFlights[m].currentAltitude]].push(allFlights[m]);
@@ -320,24 +314,66 @@ function insertToFlightInfo(){
     } 
 
   }, 6000);
+ }
+
+function insertValue(){
+  const ob1 = {
+    Callsign : 'MI320',
+    //path : '[WSSS,VTK,VJR,GUPTA,VKL,WMKK]',
+    //path : '[WSSS,VTK,PADLI,ISTAN,VKL,WMKK]',
+    //path : '[WBGG,VKG,KAMIN,TOMAN,VTK,WSSS]',
+    path : '[WBGG,VKG,AGOBA,SABIP,TOMAN,HOSBA,VTK,WSSS]',
+    Routing : 'WBGG_WSSS',
+    Departure_Time : '05.00.00',
+    Altitude : '[12000,38000,38000,38000,38000,38000,7000]',
+    Speed_multiplied : '[1160, 3600, 3600, 3600, 3600, 3600, 3600, 3600, 1280]'
+  }
+
+  const ob2 = new Flight(ob1);
+  ob2.initializing();
+  if(detectLineCrossing(ob2.route, markedRegionPolygon)){
+    console.log('before rerouting = '+ob2.route)
+    console.log('intersecting')
+    const newPath = waypointGraph.findValidShortestPath(ob2.route[0], ob2.route[ob2.route.length-1]);
+    console.log(newPath);
+    if(newPath != null){
+      ob2.route = newPath;
+      ob2.altitude = generateAltitudes(newPath.length);
+      ob2.speeds = generateSpeeds(newPath.length)
+      console.log(ob2)
+      if(ob2.currentAltitude in namingObject){
+        flightInfo[namingObject[ob2.currentAltitude]].push(ob2);
+      }else{
+        namingObject[ob2.currentAltitude] = Object.keys(namingObject).length;
+        flightInfo.push([]);
+        flightInfo[namingObject[ob2.currentAltitude]].push(ob2);
+      }
+    }
+  }else{
+    allFlights.push(ob2);
+    console.log('allflightsss')
+    insertToFlightInfo();
+  }
 }
+
 
 function main(){
   //console.log('username = '+username);
 
   getWaypoints();
   //Create the marked region polygon
-  // const markedRegionVertices = [
-  //   { lat: 1.675, lng: 103.66 },/*VJR*/
-  //   { lat: 2.1633333, lng: 102.641666 }, /*GUPTA*/
-  //   { lat: 2.80055, lng: 102.671944 } /*SAROX */
-  // ];
-
   const markedRegionVertices = [
-    { lat: 2.368333333, lng: 107.099444444 },/*VJR*/
-    { lat: 1.97833333333, lng: 108.5 }, /*GUPTA*/
-    { lat: 1.41444444444, lng: 107.990555555 } /*SAROX */
+    { lat: 1.675, lng: 103.66 },/*VJR*/
+    { lat: 2.1633333, lng: 102.641666 }, /*GUPTA*/
+    { lat: 2.80055, lng: 102.671944 } /*SAROX */
   ];
+
+  // const markedRegionVertices = [
+  //   { lat: 2.368333333, lng: 107.099444444 },/*VJR*/
+  //   { lat: 1.97833333333, lng: 108.5 }, /*GUPTA*/
+  //   { lat: 1.41444444444, lng: 107.990555555 }, /*SAROX */
+   
+  // ];
 
   markedRegionPolygon = new google.maps.Polygon({
     paths: markedRegionVertices.map(vertex => ({ lat: vertex.lat, lng: vertex.lng })),
@@ -349,14 +385,14 @@ function main(){
   });
   
   markedRegionPolygon.setMap(map);
-  scheduleRequest();
   
   // setTimeout(function() {
   //   const ob1 = {
   //     Callsign : 'MI320',
   //     //path : '[WSSS,VTK,VJR,GUPTA,VKL,WMKK]',
   //     //path : '[WSSS,VTK,PADLI,ISTAN,VKL,WMKK]',
-  //     path : '[WBGG,VKG,VSI,ADGAB,VBU,WBGB]',
+  //     //path : '[WBGG,VKG,KIBOL,VPT,PADLI,VPK]',
+  //     path : '[WBGG,VKG,AGOBA,SABIP,TOMAN,HOSBA,VTK,WSSS]',
   //     Routing : 'WSSS_WMKK',
   //     Departure_Time : '05.00.00',
   //     Altitude : '[12000,36000,36000,36000,12000]',
@@ -367,19 +403,26 @@ function main(){
   //   const ob2 = new Flight(ob1);
   //   ob2.initializing();
   //   if(detectLineCrossing(ob2.route, markedRegionPolygon)){
-  //     fetchedFlights.push(ob2);
+  //     //fetchedFlights.push(ob2);
   //     console.log('fetched')
+  //     console.log(ob2.route[0]+'  '+ob2.route[ob2.route.length-1])
+  //     const newPath = waypointGraph.findValidShortestPath(ob2.route[0], ob2.route[ob2.route.length-1]);
+  //     console.log('new path = '+newPath)
+  //     ob2.route = newPath;
+  //     ob2.altitude = generateAltitudes(newPath.length);
+  //     ob2.speeds = generateSpeeds(newPath.length);
+  //     flightInfo.push([]);
+  //     flightInfo[namingObject[ob1.currentAltitude]].push(ob2);
   //   }else{
   //     allFlights.push(ob2);
   //     console.log('allflights')
+  //     //insertToFlightInfo();
   //   }
-  // }, 6000);
+  // }, 7000);
 
-
-  
 
   //--------------------------------------------------------------------------------
-  // pushing flights to the flightinfo array for the simulation - flightinfo contains the flights that fly
+  //pushing flights to the flightinfo array for the simulation - flightinfo contains the flights that fly
   // intervalId2 = setInterval(function() {
   //   //console.log('flightInfo = '+flightInfo);
   //   for(let m = 0; m < allFlights.length; m++){
@@ -399,7 +442,7 @@ function main(){
   //         m--;
   //       }
   //     }
-  //     //console.log(allFlights)
+  //     console.log(flightInfo)
   //   } 
 
   // }, 7000);
@@ -464,8 +507,6 @@ function main(){
   //setTimeout(function() {
       // this repeats at 2000ms intervals and calculate the new location of the plane
     intervalId1 = setInterval(function() {
-      //console.log('Planecount = '+Planecount)
-      console.log('Flight info length = '+flightInfo.length)
       // Get the new coordinates for the marker
       for(let j = 0; j < flightInfo.length; j++){ // iterate through flight levels 
         if(flightInfo[j].length > 0){
@@ -504,15 +545,11 @@ function main(){
             }
           }
           // copying flight info to another array
-          //compArr = [];
           compArr = Array.from(flightInfo, arr => [...arr]);
-          //console.log(compArr)
-          // collision handling
           collisionHandling();
         }
-        
       }
-      console.log(flightInfo)
+      
     }, 2500);
   //}, 2000);
 }
